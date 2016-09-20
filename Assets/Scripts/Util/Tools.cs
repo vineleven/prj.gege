@@ -19,4 +19,9 @@ public class Tools {
 	{
 		Debug.LogError (msg);
 	}
+
+
+	public static int Random(int min, int max) {
+		return UnityEngine.Random.Range(min, max);
+	}
 }

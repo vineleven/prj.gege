@@ -7,11 +7,15 @@ public class MgrScene : MonoBehaviour {
 
 
 	public static Camera uiCamera;
-
+	public static Camera battleCamera;
+	public static GameObject ground;
 
 
 	void Awake(){
-		uiCamera = GameObject.FindWithTag ("UiCamera").GetComponent<Camera>();
+		uiCamera = GameObject.Find ("UIRoot/UiCamera").GetComponent<Camera>();
+		battleCamera = GameObject.Find("BattleCamera").GetComponent<Camera>();
+		ground = GameObject.Find ("Ground");
+//		battleCamera.enabled = false;
 	}
 
 
