@@ -7,7 +7,7 @@ public interface Config {
 	/**
 	 * GameServer timer更新间隔
 	 */
-	public static long GAME_SRERVER_TIMER_UPDATE_INTERVAL = 1000 / 40;
+	public static int GAME_SRERVER_UPDATE_INTERVAL = 1000 / 40;
 	
 	/**
 	 * 服务器端口

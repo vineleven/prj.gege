@@ -5,16 +5,16 @@ import java.util.LinkedList;
 
 
 
-public class Timer extends Thread {
+public class Executer extends Thread {
 	public static final long MIN_INTERVAL = 1000 / 50;
 	private int _nextId = 0;
-	public LinkedList< RunnerExecutor > executorList = new LinkedList< RunnerExecutor >();
+	public LinkedList< RunnerItem > executorList = new LinkedList< RunnerItem >();
 	
 	private boolean bRunning = true;
 	private long interval = 0;
 	
 	
-	public Timer( long interval ) {
+	public Executer( long interval ) {
 		this.interval = interval < MIN_INTERVAL ? MIN_INTERVAL : interval;
 	}
 	
@@ -31,7 +31,7 @@ public class Timer extends Thread {
 	
 	public int add( Runner runner, long delayTime, Object obj ){
 		synchronized( executorList ){
-			executorList.add( new RunnerExecutor( _nextId++, runner, delayTime + System.currentTimeMillis(), obj ) );
+			executorList.add( new RunnerItem( _nextId++, runner, delayTime + System.currentTimeMillis(), obj ) );
 			return _nextId;
 		}
 	}
@@ -39,9 +39,9 @@ public class Timer extends Thread {
 	
 	public void remove( int id ){
 		synchronized( executorList ){
-			RunnerExecutor item;
-			for ( Iterator<RunnerExecutor> iterator = executorList.iterator(); iterator.hasNext(); ) {
-				item = ( RunnerExecutor ) iterator.next();
+			RunnerItem item;
+			for ( Iterator<RunnerItem> iterator = executorList.iterator(); iterator.hasNext(); ) {
+				item = ( RunnerItem ) iterator.next();
 				if( item.id == id ){
 					iterator.remove();
 					break;
@@ -56,9 +56,9 @@ public class Timer extends Thread {
 		while ( bRunning ) {
 			long startTime = System.currentTimeMillis();
 			synchronized( executorList ){
-				RunnerExecutor item;
-				for ( Iterator<RunnerExecutor> iterator = executorList.iterator(); iterator.hasNext(); ) {
-					item = ( RunnerExecutor ) iterator.next();
+				RunnerItem item;
+				for ( Iterator<RunnerItem> iterator = executorList.iterator(); iterator.hasNext(); ) {
+					item = ( RunnerItem ) iterator.next();
 					
 					if( item.execut( startTime ) ){
 						iterator.remove();
@@ -80,14 +80,14 @@ public class Timer extends Thread {
 	}
 	
 	
-	public class RunnerExecutor {
+	public class RunnerItem {
 		public int id = 0;
 		private Runner runner = null;
 		private long executTime;
 		private Object obj = null;
 		
 		
-		public RunnerExecutor( int id, Runner runner, long executTime, Object obj ) {
+		public RunnerItem( int id, Runner runner, long executTime, Object obj ) {
 			this.id = id;
 			this.runner = runner;
 			this.executTime = executTime;
