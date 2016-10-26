@@ -135,12 +135,12 @@ public class GameServer extends Thread {
 		public void run() {
 			try {
 				while ( true ) {
-					JSONObject obj = receive(m_input);
-					if(obj == null)
+					JSONObject req = receive(m_input);
+					if(req == null)
 						break;
 //					Tools.debugf( "request:%s", obj.toString() );
 					
-					
+					game.request(req);
 				}
 			} catch ( Exception e ) {
 				Tools.errorf( "%s clien: %s" , m_remoteAddr, e.getMessage() );

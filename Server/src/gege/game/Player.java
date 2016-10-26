@@ -9,4 +9,9 @@ public class Player {
 	public Player(GameSession session) {
 		m_session = session;
 	}
+	
+	
+	public void join(Room r){
+		
+	}
 }

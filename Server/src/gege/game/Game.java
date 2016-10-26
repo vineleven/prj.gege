@@ -7,6 +7,7 @@ import gege.util.TickThread;
 
 import java.util.Hashtable;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 
@@ -35,7 +36,13 @@ public class Game extends TickThread{
 	
 	
 	public void request(JSONObject req){
-		m_reqQueue.enqueue(req);
+		try {
+			String cmd = req.getString("cmd");
+			if(!cmd.isEmpty())
+				m_reqQueue.enqueue(req);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 	}
 
 
