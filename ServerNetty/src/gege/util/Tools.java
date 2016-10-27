@@ -213,6 +213,11 @@ public class Tools {
 	}
 	
 	
+	public final static int Math_NormPow (int x1, int y1){
+		return x1*x1 + y1*y1;
+	}
+	
+	
 	/**
 	 * 圆桌概率，计算所有的和，然后随机到其中一个(必然会随机到其中一个)
 	 * @param rates 概率列表

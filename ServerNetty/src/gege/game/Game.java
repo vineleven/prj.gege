@@ -1,12 +1,13 @@
 package gege.game;
 
+import gege.common.EventDispatcher;
+import gege.common.Request;
 import gege.common.SyncQueue;
 import gege.common.TickThread;
+import gege.consts.Event;
 import gege.consts.Global;
 
 import java.util.ArrayList;
-
-import org.json.JSONObject;
 
 
 /**
@@ -18,6 +19,7 @@ import org.json.JSONObject;
 public class Game extends TickThread {
 
 	private static Game inst = null;
+	
 	
 	public synchronized static Game create(){
 		if( inst == null ){
@@ -35,12 +37,6 @@ public class Game extends TickThread {
 	
 	
 	
-	public static SyncQueue<JSONObject> requestQueue = new SyncQueue<>( Global.GAME_REQUEST_QUEUE_MAX_SIZE );
-	
-	public static void dispatchRequest(JSONObject req){
-		// 验证连接是否合法
-		requestQueue.enqueue( req );
-	}
 	
 	
 	
@@ -49,6 +45,8 @@ public class Game extends TickThread {
 	
 	
 	
+	
+	public SyncQueue<Request> m_requestQueue = new SyncQueue<>( Global.GAME_REQUEST_QUEUE_MAX_SIZE );
 	
 	private ArrayList<Player> mPlayerList = new ArrayList<>( 256 );
 
@@ -59,19 +57,35 @@ public class Game extends TickThread {
 	private void init(){
 		// 游戏基础数据
 		
+		EventDispatcher.getGlobalInstance().addListener(Event.NET_REQUEST, this::onRequest);
+		
 		int interval = getInterval();
 		// 更新器
 //		mReqCyc = new Cycler(Global.GAME_PROCESS_REQUEST_INTERVAL / interval, this::procRequest );
 	}
 	
 	
+	public boolean onRequest(Object data){
+		Request req = (Request) data;
+		m_requestQueue.enqueue(req);
+		return true;
+	}
+	
+	
 	public void procRequest(){
-//		Request req;
-//		int count = 0;
-//		while( count < Global.GAME_MAX_PROCESS_REQUEST && ( req = requestQueue.dequeueImm() ) != null ){
+		// 理论需要处理所有游戏相关的请求
+		Request req;
+		int count = 0;
+		while( count < Global.GAME_MAX_PROCESS_REQUEST && ( req = m_requestQueue.dequeueImm() ) != null ){
 //			req.call();
-//			count++;
-//		}
+			procRequest(req);
+			count++;
+		}
+	}
+	
+	
+	private void procRequest(Request req){
+		
 	}
 	
 	

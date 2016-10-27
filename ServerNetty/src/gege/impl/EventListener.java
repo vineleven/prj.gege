@@ -11,7 +11,7 @@ public interface EventListener {
 	 * @param datas
 	 * @return 返回true会中断Event
 	 */
-	public boolean onEvent( Object ... datas );
+	public boolean onEvent( Object data );
 //	public void mark( int listenerId );
 }
 

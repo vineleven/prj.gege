@@ -1,5 +1,7 @@
 package gege.net.server;
 
+import gege.mgr.mgrSession;
+
 
 
 
@@ -19,5 +21,8 @@ public class _Main {
 //		mgrControl.watch();
 //		mgrControl.start();
 		
+		
+		mgrSession.initialize();
 	}
+	
 }
