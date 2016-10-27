@@ -11,7 +11,7 @@ public interface Global {
 	final public static int RANDOM_INT = Tools.getRandomInt( 123456, 654321 );
 		
 	// server
-	int GAME_SERVER_PORT = 6666;
+	int GAME_SERVER_PORT = 51234;
 	int LOGIN_SERVER_PORT = 6665;
 	
 	int CPU_COUNT = Runtime.getRuntime().availableProcessors();
