@@ -62,10 +62,12 @@ public class EventDispatcher {
 	 */
 	public void dispatchEvent( Event event, Object data ){
 		ArrayList<EventListener> listeners =  allListeners.get(event);
-		int size = listeners.size();
-		for (int i = 0; i < size; i++) {
-			if( listeners.get(i).onEvent(data) )
-				break;
+		if(listeners != null){
+			int size = listeners.size();
+			for (int i = 0; i < size; i++) {
+				if( listeners.get(i).onEvent(data) )
+					break;
+			}
 		}
 	}
 	

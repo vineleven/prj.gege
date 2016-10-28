@@ -4,10 +4,14 @@ import gege.common.EventDispatcher;
 import gege.common.Request;
 import gege.common.SyncQueue;
 import gege.common.TickThread;
+import gege.consts.Cmd;
 import gege.consts.Event;
 import gege.consts.Global;
+import gege.util.Tools;
 
 import java.util.ArrayList;
+
+import org.json.JSONObject;
 
 
 /**
@@ -76,16 +80,31 @@ public class Game extends TickThread {
 		// 理论需要处理所有游戏相关的请求
 		Request req;
 		int count = 0;
-		while( count < Global.GAME_MAX_PROCESS_REQUEST && ( req = m_requestQueue.dequeueImm() ) != null ){
+		try{
+			while( count < Global.GAME_MAX_PROCESS_REQUEST && ( req = m_requestQueue.dequeueImm() ) != null ){
 //			req.call();
-			procRequest(req);
-			count++;
+				procRequest(req);
+				count++;
+			}
+		} catch(Exception e){
+			e.printStackTrace();
 		}
 	}
 	
 	
-	private void procRequest(Request req){
-		
+	private void procRequest(Request req) throws Exception {
+		switch (req.cmd) {
+		case Cmd.C2S_GET_TIME:
+			if(Tools.getRandomInt(0, 2) == 0){
+				JSONObject data = new JSONObject();
+				data.put("rnd", Tools.getRandomInt(100, 1000));
+				req.getSession().send(1, data);
+			}
+			break;
+
+		default:
+			break;
+		}
 	}
 	
 	
@@ -102,6 +121,8 @@ public class Game extends TickThread {
 	@Override
 	public void onUpdate() {
 		try {
+			procRequest();
+			updateGameLogic();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

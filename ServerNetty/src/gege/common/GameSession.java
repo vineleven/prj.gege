@@ -62,6 +62,7 @@ public class GameSession {
 	
 	
 	public void onRemove(){
+		Logger.debug("disconnect:" + m_chn.toString());
 		m_chn = null;
 	}
 }
