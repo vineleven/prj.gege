@@ -1,11 +1,11 @@
 package gege.common;
 
-import gege.consts.Event;
-import gege.impl.EventListener;
+import gege.consts.EventId;
 import gege.util.Logger;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 
 
@@ -19,35 +19,35 @@ import java.util.HashMap;
 public class EventDispatcher {
 	
 	private static EventDispatcher inst = new EventDispatcher();
-	public static EventDispatcher getGlobalInstance(){
+	public synchronized static EventDispatcher getGlobalInstance(){
 		return inst;
 	}
 	
 	
 	
-	private HashMap<Event, ArrayList<EventListener>> allListeners = new HashMap<>();
+	private HashMap<EventId, LinkedList<EventListener>> allListeners = new HashMap<>();
 	
 	
 	public EventDispatcher() {
 	}
 	
 	
-	public void addListener( Event event, EventListener listener ){
+	public void addListener( EventId event, EventListener listener ){
 		if( !checkListener(event, listener) ){
 			allListeners.get(event).add( listener );
 		}
 	}
 	
 	
-	private boolean checkListener( Event event, EventListener listener ){
-		ArrayList<EventListener> listeners =  allListeners.get(event);
+	private boolean checkListener( EventId eventId, EventListener listener ){
+		LinkedList<EventListener> listeners =  allListeners.get(eventId);
 		if(listeners == null){
-			allListeners.put(event, new ArrayList<EventListener>());
+			allListeners.put(eventId, new LinkedList<EventListener>());
 		} else {
-			// TODO: 可以考虑去掉验证
-			for (int i = 0; i < listeners.size(); i++) {
-				if( listeners.get( i ) == listener ){
-					Logger.error( "Alread has EventListener in Event:[" + event + "]." + " listener:[" + listener.toString() + "]." );
+			for (Iterator<EventListener> iterator = listeners.iterator(); iterator.hasNext();) {
+				EventListener l = iterator.next();
+				if(l == listener){
+					Logger.error( "Alread has EventListener in EventId:[" + eventId + "]." + " listener:[" + listener.toString() + "]." );
 					return true;
 				}
 			}
@@ -60,29 +60,34 @@ public class EventDispatcher {
 	/**
 	 * 先添加的会先收到消息
 	 */
-	public void dispatchEvent( Event event, Object data ){
-		ArrayList<EventListener> listeners =  allListeners.get(event);
+	public void dispatchEvent(EventId eventId, Object data){
+		LinkedList<EventListener> listeners =  allListeners.get(eventId);
 		if(listeners != null){
-			int size = listeners.size();
-			for (int i = 0; i < size; i++) {
-				if( listeners.get(i).onEvent(data) )
+			GameEvent e = new GameEvent(data);
+			for (Iterator<EventListener> iterator = listeners.iterator(); iterator.hasNext();) {
+				EventListener listener = iterator.next();
+				if(listener.bStop()){
+					iterator.remove();
+					continue;
+				}
+				
+				listener.onEvent(e);
+				if(e.bStop())
 					break;
 			}
 		}
 	}
 	
 	
-	public void removeListener( EventListener listener ){
-		for (Event e : Event.values()) {
-			removeListener(e, listener);
-		}
+	public void removeAllUnused(){
+		allListeners.forEach((eid, list) ->{
+			for (Iterator<EventListener> iterator = list.iterator(); iterator.hasNext();) {
+				EventListener listener = iterator.next();
+				if(listener.bStop())
+					iterator.remove();
+			}
+		});
 	}
-	
-	
-	public void removeListener(Event e, EventListener listener){
-		allListeners.get(e).remove(listener);
-	}
-	
 	
 }
 

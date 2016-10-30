@@ -1,5 +1,5 @@
 package gege.game;
 
-public class Player {
+public class Player extends GameEntity{
 
 }

@@ -1,6 +1,7 @@
 package gege.common;
 
-import gege.consts.Event;
+import gege.consts.EventId;
+import gege.consts.GameState;
 import gege.consts.Global;
 import gege.util.Logger;
 import io.netty.buffer.Unpooled;
@@ -21,10 +22,30 @@ import org.json.JSONObject;
 public class GameSession {
 	private Channel m_chn;
 	
+	private String m_playerName = "";
+	
+	private GameState m_state = GameState.IDLE;
 
 
 	public GameSession(Channel chn) {
 		m_chn = chn;
+		m_playerName = m_chn.remoteAddress().toString();
+	}
+	
+	
+	
+	public String getPlayerName(){
+		return m_playerName;
+	}
+	
+	
+	public void setName(String name){
+		m_playerName = name;
+	}
+	
+	
+	public boolean inState(GameState state){
+		return m_state.equals(state);
 	}
 	
 	
@@ -32,9 +53,14 @@ public class GameSession {
 	 * 接受消息
 	 */
 	public void receive(String msg){
+		if(m_chn == null){
+			Logger.error( "Session receive: channel is null." );
+			return;
+		}
+		
 		try{
 			Request req = new Request(this, msg);
-			EventDispatcher.getGlobalInstance().dispatchEvent(Event.NET_REQUEST, req);
+			EventDispatcher.getGlobalInstance().dispatchEvent(EventId.GLOBAL_REQUEST, req);
 		} catch(JSONException e){
 			Logger.error( "receive an invalid msg [" + msg + "]" );
 		}
@@ -46,7 +72,7 @@ public class GameSession {
 	 */
 	public void send(int cmd, JSONObject data) {
 		if( m_chn == null ){
-			Logger.error( "Response SendTo Error, channel is null." );
+			Logger.error( "Session send: channel is null." );
 			return;
 		}
 		
@@ -57,6 +83,8 @@ public class GameSession {
 		
 		String msg = sendData.toString().concat( Global.MSG_END_FLAG );
 		
+		Logger.debug( "send:" + msg );
+		
 		m_chn.writeAndFlush(Unpooled.copiedBuffer(msg.getBytes()));
 	}
 	
@@ -64,5 +92,10 @@ public class GameSession {
 	public void onRemove(){
 		Logger.debug("disconnect:" + m_chn.toString());
 		m_chn = null;
+	}
+	
+	
+	public boolean enabled(){
+		return m_chn != null;
 	}
 }

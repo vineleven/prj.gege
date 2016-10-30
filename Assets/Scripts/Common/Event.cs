@@ -1,15 +1,20 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Event : MonoBehaviour {
+public enum EventId {
+    GLOBAL_RESPONSE,
+    
 
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+    //MSG_UI
+    //MSG_JOIN_ROOM,
+
+
+    UI_UPDATE_PING,
+    UI_UPDATE_DEBUG_INFO,
+
+    UI_UPDATE_ROOM_CENTER,
+    UI_UPDATE_ROOM_INFO,
+
+
+    UI_CLOSE_LOADING,
 }

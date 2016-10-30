@@ -11,7 +11,8 @@ public class MgrScene : MonoBehaviour {
 	public static GameObject ground;
 
 
-	void Awake(){
+	void Awake()
+    {
 		uiCamera = GameObject.Find ("UIRoot/UiCamera").GetComponent<Camera>();
 		battleCamera = GameObject.Find("BattleCamera").GetComponent<Camera>();
 		ground = GameObject.Find ("Ground");
@@ -19,12 +20,36 @@ public class MgrScene : MonoBehaviour {
 	}
 
 
-	void Start () {
-	
+	static SceneBase m_curScene;
+	void Start ()
+    {
+        openNextScene(new SceneMain());
 	}
+
+
+    void OnDestroy()
+    {
+        if (m_curScene != null)
+            m_curScene.onLevel();
+
+        m_curScene = null;
+    }
+
+
+    public static void openNextScene(SceneBase scene)
+    {
+        if (m_curScene != null)
+            m_curScene.onLevel();
+
+        MgrPanel.disposeAllPanel();
+
+        m_curScene = scene;
+        m_curScene.onEnter();
+    }
 	
+
 	// Update is called once per frame
-	void Update () {
-	
+	void Update ()
+    {
 	}
 }

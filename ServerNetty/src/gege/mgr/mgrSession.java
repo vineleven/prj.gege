@@ -3,7 +3,6 @@ package gege.mgr;
 import gege.common.GameSession;
 import gege.net.channel.GameChannelGroup;
 import gege.util.Logger;
-import gege.util.Tools;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelId;
 import io.netty.channel.group.ChannelGroup;

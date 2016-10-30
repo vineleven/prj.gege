@@ -1,6 +1,6 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
+using Global;
 
 public class EventDispatcher {
 
@@ -11,7 +11,7 @@ public class EventDispatcher {
 
 
 
-	private Dictionary<Event, List<EventListener>> allListeners = new Dictionary<Event, List<EventListener>>();
+    private Dictionary<EventId, LinkedList<EventListener>> allListeners = new Dictionary<EventId, LinkedList<EventListener>>();
 
 
 
@@ -19,22 +19,23 @@ public class EventDispatcher {
 	}
 
 
-	public void addListener( Event e, EventListener listener ){
-		if( !checkListener(e, listener) ){
-			allListeners [e].Add (listener);
+    public void addListener(EventId eid, EventListener listener)
+    {
+		if( !checkListener(eid, listener) ){
+            allListeners[eid].AddLast(listener);
 		}else {
-			Tools.LogError( "Alread has EventListener in Event:[" + e + "]." + " listener:[" + listener.ToString() + "]." );
+			Tools.LogError( "Alread has EventListener in Event:[" + eid + "]." + " listener:[" + listener.ToString() + "]." );
 		}
 	}
 
 
-	private bool checkListener( Event e, EventListener listener ){
-		if(allListeners.ContainsKey(e)){
-			var list = allListeners [e];
-			list.Remove (listener);
+    private bool checkListener(EventId eid, EventListener listener)
+    {
+		if(allListeners.ContainsKey(eid)){
+			var list = allListeners [eid];
 			return list.Contains (listener);
 		} else {
-			allListeners.Add(e, new List<EventListener>());
+            allListeners.Add(eid, new LinkedList<EventListener>());
 		}
 
 		return false;
@@ -44,25 +45,93 @@ public class EventDispatcher {
 	/**
 	 * 先添加的会先收到消息
 	 */
-	public void dispatchEvent( Event e, Object data ){
-		List<EventListener> listeners =  allListeners[e];
-		foreach(var listener in listeners){
-			if(listener.onEvent(data)){
-				break;
-			}
-		}
+	public void dispatchEvent(EventId eid, object data){
+        if (!allListeners.ContainsKey(eid))
+        {
+            Tools.LogWarn("can't find event:" + eid.ToString());
+            return;
+        }
+        var listeners = allListeners[eid];
+
+        var e = new GameEvent(data);
+
+        var node = listeners.First;
+        while (node != null)
+        {
+            var listener = node.Value;
+            if (listener.bStop())
+            {
+                var next = node.Next;
+                listeners.Remove(node);
+                node = next;
+                continue;
+            }
+
+            listener.onEvent(e);
+            if(e.bStop())
+                break;
+
+            node = node.Next;
+        }
 	}
 
 
-	public void removeListener( EventListener listener ){
-		foreach(var e in allListeners.Keys){
-			removeListener (e, listener);
-		}
-	}
+    public class UiEvent
+    {
+        public EventId eid;
+        public object data;
+        public UiEvent(EventId eid, object data)
+        {
+            this.eid = eid;
+            this.data = data;
+        }
+    }
+    private LinkedList<UiEvent> m_uiEvent = new LinkedList<UiEvent>();
+    /**
+     * 非UI线程不能调整UI，故放入UI线程更新
+     */
+    public void dispatchUiEvent(EventId eid, object data)
+    {
+        m_uiEvent.AddLast(new UiEvent(eid, data));
+    }
 
 
-	public void removeListener(Event e, EventListener listener){
-		allListeners [e].Remove (listener);
+    public void procUiEvent()
+    {
+        var node = m_uiEvent.First;
+        LinkedListNode<UiEvent> next;
+        UiEvent e;
+        while (node != null)
+        {
+            next = node.Next;
+            e = node.Value;
+            
+            m_uiEvent.Remove(node);
+            node = next;
+
+            dispatchEvent(e.eid, e.data);
+        }
+    }
+
+
+    public void removeAllUnused(){
+        foreach (var ls in allListeners.Values)
+        {
+            var node = ls.First;
+            while (node != null)
+            {
+                if (node.Value.bStop())
+                {
+                    var next = node.Next;
+                    ls.Remove(node);
+                    node = next;
+                }
+                else
+                {
+                    node = node.Next;
+                }
+            }
+        }
 	}
 
 

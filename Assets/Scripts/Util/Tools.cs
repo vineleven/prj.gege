@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
+
+
 
 public class Tools {
 
@@ -24,4 +27,10 @@ public class Tools {
 	public static int Random(int min, int max) {
 		return UnityEngine.Random.Range(min, max);
 	}
+
+
+    public static long getCurTime()
+    {
+        return DateTime.Now.Ticks / 10000;
+    }
 }

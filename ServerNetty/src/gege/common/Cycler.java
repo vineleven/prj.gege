@@ -1,6 +1,5 @@
 package gege.common;
 
-import gege.impl.Callable;
 
 
 /**
@@ -23,7 +22,7 @@ import gege.impl.Callable;
 public class Cycler {
 	int cur = 1;
 	int cycle = 0;
-	Callable caller = null;
+	Runnable caller = null;
 	
 	
 	/**
@@ -40,7 +39,7 @@ public class Cycler {
 	 * @param cycle >= 1
 	 * @param caller 执行器
 	 */
-	public Cycler( int cycle, Callable caller ){
+	public Cycler( int cycle, Runnable caller ){
 		this( cycle );
 		
 		this.caller = caller;
@@ -69,6 +68,6 @@ public class Cycler {
 	public void update(){
 		if( tick() )
 			if( caller != null )
-				caller.call();
+				caller.run();
 	}
 }
