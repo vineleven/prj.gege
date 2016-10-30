@@ -78,7 +78,7 @@ public class PanelRoomCenter : PanelBase {
             {
                 string name = rawData["name"] as string;
                 int idx = Convert.ToInt32(rawData["idx"]);
-                string desc = rawData["desc"] as string;
+                int sideCount = Convert.ToInt32(rawData["sideCount"]);
 
                 RoomItem item;
                 if (index >= m_rooms.Count)
@@ -93,7 +93,7 @@ public class PanelRoomCenter : PanelBase {
                     item = m_rooms[index];
                 }
 
-                item.setRoomInfo(idx, name, desc);
+                item.setRoomInfo(idx, name, sideCount);
                 item.show();
                 index++;
             }
@@ -109,8 +109,9 @@ public class PanelRoomCenter : PanelBase {
     void onClickJoin(object obj)
     {
         int roomId = (int)obj;
-        Tools.Log("click room:" + roomId);
-
+        MgrNet.reqJoinRoom(roomId);
+        close();
+        MgrPanel.openRoom()
     }
 
 
@@ -133,11 +134,11 @@ public class PanelRoomCenter : PanelBase {
         }
 
 
-        public void setRoomInfo(int idx, string  name, string desc)
+        public void setRoomInfo(int idx, string  name, int sideCount)
         {
             m_roomId = idx;
             m_name.text = name;
-            m_desc.text = desc;
+            m_desc.text = "" + sideCount + " VS " + sideCount;
         }
 
 

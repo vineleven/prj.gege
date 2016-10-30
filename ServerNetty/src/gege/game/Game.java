@@ -186,6 +186,7 @@ public class Game extends TickThread {
 			list.put(info);
 		});
 		
+		/*
 		// 测试
 		int count = Tools.getRandomInt(0, 10);
 		for (int i = 0; i < count; i++) {
@@ -195,6 +196,7 @@ public class Game extends TickThread {
 			info.put("desc", "3/3");
 			list.put(info);
 		}
+		 */
 		
 		data.put("list", list);
 		req.getSession().send(Cmd.C2S_ROOM_CENTER, data);

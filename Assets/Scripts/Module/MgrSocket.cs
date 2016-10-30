@@ -13,7 +13,8 @@ using UnityEngine;
 class MgrSocket: MonoBehaviour
 {
 	//端口及IP  
-	static IPEndPoint ipe = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 51234);
+    //static IPEndPoint ipe = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 51234);
+    static IPEndPoint ipe = new IPEndPoint(IPAddress.Parse("192.168.1.101"), 51234);
 
 	int m_reconncetTime = 100;
 	bool m_connectting = false;
@@ -40,7 +41,8 @@ class MgrSocket: MonoBehaviour
 
 
 	void Start(){
-        StartCoroutine(getServerInfo());
+        //StartCoroutine(getServerInfo());
+        StartCoroutine(Connect());
 	}
 
 
