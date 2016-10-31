@@ -1,8 +1,9 @@
 package gege.game;
 
-import gege.common.GameEvent;
+import gege.common.Callback;
 import gege.common.EventDispatcher;
 import gege.common.EventHandler;
+import gege.common.GameEvent;
 import gege.common.GameSession;
 import gege.common.Request;
 import gege.common.SyncQueue;
@@ -11,14 +12,17 @@ import gege.consts.Cmd;
 import gege.consts.EventId;
 import gege.consts.GameState;
 import gege.consts.Global;
+import gege.game.Room.Visitor;
 import gege.util.Logger;
-import gege.util.Tools;
+import io.netty.util.CharsetUtil;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 
@@ -74,9 +78,14 @@ public class Game extends TickThread {
 	// 游戏内消息
 	private EventHandler m_game_eventHander = new EventHandler();
 	
-	// 注册列表
-	
+	// 所有房间
 	private ArrayList<Room> m_rooms = new ArrayList<>();
+	
+	// 所有副本
+	private ArrayList<World> m_worlds = new ArrayList<>();
+	
+	// 注册列表
+	private LinkedList<LaterCall> m_callLaters = new LinkedList<LaterCall>();
 	
 	
 	
@@ -93,7 +102,6 @@ public class Game extends TickThread {
 		m_global_eventHander.addEventCallback(EventId.GLOBAL_REQUEST, this::onRequest);
 		
 		m_game_eventHander = new EventHandler(m_dispatcher);
-		m_game_eventHander.addEventCallback(EventId.GAME_ROOM_EMPTY, this::onRoomEmpty);
 	}
 	
 	
@@ -103,6 +111,8 @@ public class Game extends TickThread {
 		m_reqListeners.put(Cmd.C2S_ROOM_CENTER, this::reqRoomCenter);
 		m_reqListeners.put(Cmd.C2S_NEW_ROOM, this::reqNewRoom);
 		m_reqListeners.put(Cmd.C2S_JOIN_ROOM, this::reqJoinRoom);
+		m_reqListeners.put(Cmd.C2S_LEVEL_ROOM, this::reqLeaveRoom);
+		m_reqListeners.put(Cmd.C2S_START_GAME, this::reqStartGame);
 	}
 	
 	
@@ -143,7 +153,26 @@ public class Game extends TickThread {
 	public long getCurTime(){ return getLastTickTime() / 1000; }
 	
 	
+	public void callLaterTime(int delay, Callback callback){
+		m_callLaters.addLast(new LaterCall(delay + System.currentTimeMillis(), callback));
+	}
+	
+	
+	private void procLaterCall(){
+		long curTime = System.currentTimeMillis();
+		
+		for (Iterator<LaterCall> iterator = m_callLaters.iterator(); iterator.hasNext();) {
+			LaterCall laterCall = iterator.next();
+			if(laterCall.time <= curTime){
+				iterator.remove();
+				laterCall.callback.call();
+			}
+		}
+	}
+	
+	
 	private void updateGameLogic(){
+		
 	}
 	
 
@@ -151,10 +180,18 @@ public class Game extends TickThread {
 	public void onUpdate() {
 		try {
 			procRequest();
+			procLaterCall();
 			updateGameLogic();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	
+	public void pushMsg(GameSession session, String msg){
+		JSONObject data = new JSONObject();
+		data.put("msg", msg);
+		session.send(Cmd.S2C_SHOW_MSG, data);
 	}
 	
 	
@@ -168,7 +205,7 @@ public class Game extends TickThread {
 	
 	private void reqSetName(Request req){
 		String name = req.data.getString("name");
-		req.getSession().setName(name);
+		req.getSession().setName(new String(name.getBytes(), CharsetUtil.UTF_8));
 	}
 	
 	
@@ -181,7 +218,7 @@ public class Game extends TickThread {
 			JSONObject info = new JSONObject();
 			info.put("name", room.getName());
 			info.put("idx", room.index);
-			info.put("desc", room.getDesc());
+			info.put("sideCount", room.getSideCount());
 			
 			list.put(info);
 		});
@@ -235,15 +272,30 @@ public class Game extends TickThread {
 	
 	private void reqJoinRoom(Request req){
 		int group = req.data.getInt("group");
-		int idx = req.data.getInt("idx");
+		int idx;
+		// 如果是在房间状态下，则用自己的索引
+		if(req.getSession().inState(GameState.IN_ROOM)){
+			idx = req.getSession().getStateData().int1;
+		} else {
+			idx = req.data.getInt("idx");
+		}
 		
 		if(idx > m_rooms.size())
 			return;
 		
+		Room room = m_rooms.get(idx);
+		if(room.empty()){
+			pushMsg(req.getSession(), "Room is empty, please refresh room center.");
+			return;
+		}else if(room.full()){
+			pushMsg(req.getSession(), "Room is full, please refresh room center.");
+			return;
+		}
+		
 		if(group < 0)
-			m_rooms.get(idx).join(req.getSession());
+			room.join(req.getSession());
 		else
-			m_rooms.get(idx).join(req.getSession(), group);
+			room.join(req.getSession(), group);
 	}
 	
 	
@@ -270,11 +322,55 @@ public class Game extends TickThread {
 	}
 	
 	
-	private void onRoomEmpty(GameEvent e){
-		
+	private void reqLeaveRoom(Request req){
+		GameSession session = req.getSession();
+		if(session.inState(GameState.IN_ROOM)){
+			int idx = session.getStateData().int1;
+//			if(idx >= m_rooms.size())
+//				return;
+			
+			m_rooms.get(idx).level(session);
+		}else if(session.inState(GameState.IN_GAME)){
+			pushMsg(session, "game is start.");
+		}
 	}
 	
 	
+	private void reqStartGame(Request req){
+		if(req.getSession().inState(GameState.IN_ROOM)){
+			int roomIdx = req.getSession().getStateData().int1;
+			Visitor v = m_rooms.get(roomIdx).getVisitor(req.getSession());
+			if(!v.isHost()){
+				pushMsg(req.getSession(), "only host can start game.");
+				return;
+			}
+			
+			World world = null;
+			for (int i = 0; i < m_worlds.size(); i++) {
+				if(m_worlds.get(i).empty()){
+					world = m_worlds.get(i);
+					break;
+				}
+			}
+			
+			if(world == null)
+				world = new World();
+			
+			world.createWorld(m_rooms.get(roomIdx));
+			m_worlds.add(world);
+			world.start();
+		}
+	}
+	
 	
 
+	
+	class LaterCall{
+		long time;
+		Callback callback;
+		LaterCall(long time, Callback callback) {
+			this.time = time;
+			this.callback = callback;
+		}
+	}
 }

@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.Events;
+using System.Text;
 
 
 public class PanelInputName : PanelBase

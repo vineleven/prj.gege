@@ -8,14 +8,12 @@ public class MgrScene : MonoBehaviour {
 
 	public static Camera uiCamera;
 	public static Camera battleCamera;
-	public static GameObject ground;
 
 
 	void Awake()
     {
 		uiCamera = GameObject.Find ("UIRoot/UiCamera").GetComponent<Camera>();
 		battleCamera = GameObject.Find("BattleCamera").GetComponent<Camera>();
-		ground = GameObject.Find ("Ground");
 //		battleCamera.enabled = false;
 	}
 
@@ -30,7 +28,7 @@ public class MgrScene : MonoBehaviour {
     void OnDestroy()
     {
         if (m_curScene != null)
-            m_curScene.onLevel();
+            m_curScene.onLeave();
 
         m_curScene = null;
     }
@@ -39,7 +37,7 @@ public class MgrScene : MonoBehaviour {
     public static void openNextScene(SceneBase scene)
     {
         if (m_curScene != null)
-            m_curScene.onLevel();
+            m_curScene.onLeave();
 
         MgrPanel.disposeAllPanel();
 

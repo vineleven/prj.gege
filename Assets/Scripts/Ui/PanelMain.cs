@@ -70,6 +70,7 @@ public class PanelMain : PanelBase
         int index = (int)o;
         MgrPanel.openRoom(index);
         MgrNet.reqNewRoom(index);
+        MgrPanel.openLoading();
     }
 
     public override void close()

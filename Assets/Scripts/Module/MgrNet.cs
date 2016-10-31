@@ -8,12 +8,30 @@ using Exception = System.Exception;
 
 public class MgrNet : MonoBehaviour
 {
-    public static void registerCmds()
+    static void registerCmds()
     {
         registerCmd(Cmd.C2S_TIME, rspTime);
         registerCmd(Cmd.C2S_ROOM_CENTER, rspRoomCenter);
         registerCmd(Cmd.S2C_ROOM_INFO, rspRoomInfo);
-        
+        //registerCmd(Cmd.C2S_START_GAME, rspStartGame);
+
+        registerCmd(Cmd.S2C_SHOW_MSG, rspShowMsg);
+    }
+
+
+    static void rspShowMsg(Hashtable data)
+    {
+        string msg = data["msg"] as string;
+        if (!string.IsNullOrEmpty(msg))
+        {
+            MgrTimer.callLaterTime(0, showMsg, msg);
+        }
+    }
+
+
+    static void showMsg(object msg)
+    {
+        MgrPanel.openDialog("Server Msg:" + msg);
     }
 
 
@@ -126,6 +144,21 @@ public class MgrNet : MonoBehaviour
     }
 
 
+    public static void reqLeaveRoom()
+    {
+        MgrSocket.Send(Cmd.C2S_LEVEL_ROOM);
+    }
+
+
+    public static void reqStartGame()
+    {
+        MgrSocket.Send(Cmd.C2S_START_GAME);
+    }
+
+
+    
+
+
 
 
 
@@ -197,6 +230,7 @@ public class MgrNet : MonoBehaviour
             catch (Exception ex)
             {
                 Tools.LogError("responseCallback:" + ex.Message);
+                Tools.LogError(ex.StackTrace);
             }
         }
     }

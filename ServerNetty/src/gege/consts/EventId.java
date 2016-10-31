@@ -8,8 +8,6 @@ package gege.consts;
 public enum EventId {
 	GLOBAL_REQUEST,
 	
-	GAME_ROOM_EMPTY,
-	
 	EVENT_END;
 	
 	

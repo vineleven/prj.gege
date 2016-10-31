@@ -45,7 +45,7 @@ public class EventDispatcher {
 	/**
 	 * 先添加的会先收到消息
 	 */
-	public void dispatchEvent(EventId eid, object data){
+	public void dispatchEvent(EventId eid, object data = null){
         if (!allListeners.ContainsKey(eid))
         {
             Tools.LogWarn("can't find event:" + eid.ToString());
@@ -90,7 +90,7 @@ public class EventDispatcher {
     /**
      * 非UI线程不能调整UI，故放入UI线程更新
      */
-    public void dispatchUiEvent(EventId eid, object data)
+    public void dispatchUiEvent(EventId eid, object data = null)
     {
         m_uiEvent.AddLast(new UiEvent(eid, data));
     }

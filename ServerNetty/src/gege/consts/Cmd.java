@@ -19,6 +19,16 @@ public interface Cmd {
 	// 加入房间
 	int C2S_JOIN_ROOM = 5;
 	
+	// 离开房间
+	int C2S_LEVEL_ROOM = 6;
+	
+	// 开始游戏
+	int C2S_START_GAME = 7;
+	
+	
+	
+	
+	int S2C_SHOW_MSG = 100;
 	
 //	int S2C_TIME = 100;
 //	int S2C_NEW_ROOM = 101;

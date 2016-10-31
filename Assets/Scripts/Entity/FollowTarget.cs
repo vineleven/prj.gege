@@ -6,9 +6,9 @@ public class FollowTarget : MonoBehaviour {
 
 
 	Transform target;
-	float height = 3.5f;
-	float distance = 6;
-	float xRotation = 30;
+	float height = -5.7f;
+	float distance = -4.2f;
+	float xRotation = -60;
 	float damping = 2;
 
 
@@ -42,7 +42,7 @@ public class FollowTarget : MonoBehaviour {
 		Vector3 myPos = transform.position;
 		Vector3 targetPos = target.position;
 		float dis = (myPos - targetPos).magnitude;
-		Vector3 movement = new Vector3 (0, height, -distance);
+		Vector3 movement = new Vector3 (0, height, distance);
 		Vector3 destPos = targetPos + movement;
 
 		if (dis > 10) {

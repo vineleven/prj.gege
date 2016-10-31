@@ -14,19 +14,22 @@ class MgrSocket: MonoBehaviour
 {
 	//端口及IP  
     //static IPEndPoint ipe = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 51234);
-    static IPEndPoint ipe = new IPEndPoint(IPAddress.Parse("192.168.1.101"), 51234);
+    static IPEndPoint ipe = new IPEndPoint(IPAddress.Parse("192.168.1.124"), 51234);
 
+
+    // 重新连接周期
 	int m_reconncetTime = 100;
+
+    // 是否正在连接
 	bool m_connectting = false;
 
 	
-	const int BUFFER_SIZE = 128;
 	const char MSG_END_FLAG = '$';
 
 
     static Socket m_socket = null;
-	static byte[] m_buffer = new byte[BUFFER_SIZE];
-	static StringBuilder sb = new StringBuilder ();
+    static ByteBuffer m_buffer = new ByteBuffer(1024);
+	static byte[] m_transfer_buffer = new byte[128];
 
 
     public static void setServerHost(string ip, int port)
@@ -91,8 +94,7 @@ class MgrSocket: MonoBehaviour
 		}
 
 		m_socket = null;
-        m_buffer = new byte[BUFFER_SIZE];
-	    sb = new StringBuilder ();
+        m_buffer.reset();
         m_reconncetTime = 100;
 	}
 
@@ -147,7 +149,7 @@ class MgrSocket: MonoBehaviour
 	{
 		try{
 //			Tools.Log("begin receive");
-			socket.BeginReceive(m_buffer, 0, m_buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), socket);
+			socket.BeginReceive(m_transfer_buffer, 0, m_transfer_buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), socket);
 		} catch (Exception e){
 			Tools.LogError ("Receive:" + e.Message);
 		}
@@ -162,24 +164,23 @@ class MgrSocket: MonoBehaviour
 //			Console.WriteLine("收到回复：" + Encoding.ASCII.GetString(m_buffer));
 
 			for(int i = 0; i < len; i++){
-				if(m_buffer[i] == MSG_END_FLAG){
-                    Tools.Log("receive msg suc:" + sb.ToString());
-                    var rsp = Json.DecodeMap(sb.ToString());
+				if(m_transfer_buffer[i] == MSG_END_FLAG){
+                    string receive = m_buffer.toUTF8String();
+                    m_buffer.reset();
+                    
+                    Tools.Log("receive msg suc:" + receive);
 
+                    var rsp = Json.DecodeMap(receive);
                     EventDispatcher.getGlobalInstance().dispatchEvent(EventId.GLOBAL_RESPONSE, rsp);
-
-					sb = new StringBuilder();
 				} else {
-                    sb.Append(Encoding.UTF8.GetString(m_buffer,i, 1));
+                    m_buffer.append(m_transfer_buffer, i, 1);
 				}
 			}
 
-			m_buffer = new byte[BUFFER_SIZE];
-			
 			Receive(socket);
 		} catch(Exception e){
             Tools.LogError("ReceiveCallback:" + e.Message);
-            Tools.LogError("cur msg:" + sb.ToString());
+            Tools.LogError("cur msg:" + m_buffer.ToString());
             Tools.LogError(e.StackTrace);
 		}
 	}

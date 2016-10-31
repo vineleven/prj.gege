@@ -1,14 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Global;
 
-public abstract class SceneBase {
+public abstract class SceneBase : EventHandler {
+
 
 	public virtual void onEnter(){
 		
 	}
 
 
-	public virtual void onLevel(){
-
+	public virtual void onLeave(){
+        stopProcMsg();
 	}
 }

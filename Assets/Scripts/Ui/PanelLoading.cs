@@ -41,14 +41,20 @@ public class PanelLoading : PanelBase
 
     public override string getResName()
     {
-        return "PanelDialog";
+        return "PanelLoading";
     }
 
 
     public override void onBuild(Hashtable param)
     {
-        //EventDispatcher.getGlobalInstance().addListener(Events.UI_CLOSE_LOADING, onClose);
+        addEventCallback(EventId.UI_CLOSE_LOADING, onClose);
+        startProcMsg();
     }
 
+
+    public void onClose(GameEvent e)
+    {
+        close();
+    }
 
 }

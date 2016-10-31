@@ -24,6 +24,7 @@ public class PanelRoom : PanelBase
     {
         base.close();
         m_inst = null;
+        MgrNet.reqLeaveRoom();
     }
 
 
@@ -53,14 +54,18 @@ public class PanelRoom : PanelBase
     bool m_data_prepared = false;
     bool m_player_all_in = false;
     int m_sideCount;
-    int m_roomIdx;
+    int m_roomIdx = -1;
+    bool m_bHost = false;
+
+    GameObject m_btnStart;
 
     public override void onBuild(Hashtable param)
     {
         //EventDispatcher.getGlobalInstance().addListener(Events.UI_CLOSE_LOADING, onClose);
 
         gameObject.transform.FindChild("BtnClose").GetComponent<Button>().onClick.AddListener(close);
-        gameObject.transform.FindChild("BtnStart").GetComponent<Button>().onClick.AddListener(onCLickStart);
+        m_btnStart = gameObject.transform.FindChild("BtnStart").gameObject;
+        m_btnStart.GetComponent<Button>().onClick.AddListener(onCLickStart);
 
         m_name = gameObject.transform.FindChild("Name").GetComponent<Text>();
 
@@ -119,9 +124,15 @@ public class PanelRoom : PanelBase
     void onCLickStart()
     {
         if (m_player_all_in)
-            Tools.Log("start Game");
+        {
+            MgrNet.reqStartGame();
+            MgrPanel.openLoading();
+            EventDispatcher.getGlobalInstance().dispatchEvent(EventId.MSG_START_GAME);
+        }
         else
+        {
             MgrPanel.openDialog("player not enough.");
+        }
     }
 
 
@@ -159,13 +170,24 @@ public class PanelRoom : PanelBase
             var index = groupIdx[group]++;
             m_groups[group][index].setPlayerInfo(pName, bHost);
             if (bHost)
+            {
                 m_name.text = pName;
+                if (pName == MgrNet.playerName)
+                    m_bHost = true;
+            }
         }
 
         if(m_sideCount * 2 == players.Count)
             m_player_all_in = true;
         else
             m_player_all_in = false;
+
+        if (m_bHost)
+            m_btnStart.SetActive(true);
+        else
+            m_btnStart.SetActive(false);
+
+        EventDispatcher.getGlobalInstance().dispatchUiEvent(EventId.UI_CLOSE_LOADING);
     }
 
 
@@ -176,6 +198,8 @@ public class PanelRoom : PanelBase
             foreach (var group in m_groups)
                 group[i].show().clear();
         }
+
+        m_bHost = false;
     }
 
 

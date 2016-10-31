@@ -20,11 +20,22 @@ import org.json.JSONObject;
  *
  */
 public class GameSession {
+	
+	
+	public interface OnRemove{
+		void onRemove(GameSession session);
+	}
+	
 	private Channel m_chn;
 	
 	private String m_playerName = "";
 	
 	private GameState m_state = GameState.IDLE;
+	
+	private OnRemove m_onRemove = null;
+	
+	// 不同状态下有不同含义(room 表示roomIdx  world内表示playerIdx)
+	private StateData m_stateData;
 
 
 	public GameSession(Channel chn) {
@@ -44,8 +55,24 @@ public class GameSession {
 	}
 	
 	
+	public void setState(GameState state, StateData data){
+		m_state = state;
+		m_stateData = data;
+	}
+	
+	
+	public StateData getStateData(){
+		return m_stateData;
+	}
+	
+	
 	public boolean inState(GameState state){
 		return m_state.equals(state);
+	}
+	
+	
+	public void setOnDisconnect(OnRemove onRemove){
+		m_onRemove = onRemove;
 	}
 	
 	
@@ -80,7 +107,7 @@ public class GameSession {
 
 		sendData.put( Global.MSG_KEY_CMD, cmd );
 		sendData.put( Global.MSG_KEY_DATA, data );
-		
+
 		String msg = sendData.toString().concat( Global.MSG_END_FLAG );
 		
 		Logger.debug( "send:" + msg );
@@ -92,6 +119,10 @@ public class GameSession {
 	public void onRemove(){
 		Logger.debug("disconnect:" + m_chn.toString());
 		m_chn = null;
+		if(m_onRemove != null){
+			m_onRemove.onRemove(this);
+			m_onRemove = null;
+		}
 	}
 	
 	

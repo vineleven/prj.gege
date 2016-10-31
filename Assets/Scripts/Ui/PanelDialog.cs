@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 
 
+
 public class PanelDialog : PanelBase {
 
 

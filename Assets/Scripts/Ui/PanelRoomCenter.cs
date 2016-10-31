@@ -108,10 +108,11 @@ public class PanelRoomCenter : PanelBase {
 
     void onClickJoin(object obj)
     {
-        int roomId = (int)obj;
-        MgrNet.reqJoinRoom(roomId);
+        RoomItem room = obj as RoomItem;
         close();
-        MgrPanel.openRoom()
+        MgrPanel.openRoom(room.getSideCount());
+        MgrNet.reqJoinRoom(room.getRoomIdx());
+        MgrPanel.openLoading();
     }
 
 
@@ -121,6 +122,7 @@ public class PanelRoomCenter : PanelBase {
         CallbackWithParam m_callback;
 
         int m_roomId = -1;
+        int m_sideCount = 0;
         Text m_name;
         Text m_desc;
         public RoomItem(GameObject obj, CallbackWithParam callback)
@@ -138,14 +140,24 @@ public class PanelRoomCenter : PanelBase {
         {
             m_roomId = idx;
             m_name.text = name;
+            m_sideCount = sideCount;
             m_desc.text = "" + sideCount + " VS " + sideCount;
+        }
+
+        public int getRoomIdx(){
+            return m_roomId;
+        }
+
+        public int getSideCount()
+        {
+            return m_sideCount;
         }
 
 
         void onClickJoin()
         {
             if (m_roomId != -1 && m_callback != null)
-                m_callback(m_roomId);
+                m_callback(this);
         }
 
 

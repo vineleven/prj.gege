@@ -326,16 +326,27 @@ public class MgrPanel : MonoBehaviour {
     }
 
 
-    public static void disposeAllPanel()
+    public static void disposeAllPanel(int layer = -1)
     {
-        foreach (var stack in m_view_stack)
+        if (layer == -1)
         {
-            foreach(var panel in stack){
+            for (int i = 0; i < m_view_stack.Count; i++)
+            {
+                disposeAllPanel(i);
+            }
+        }
+        else
+        {
+            var stack = m_view_stack[layer];
+            foreach (var panel in stack)
+            {
                 GameObject.Destroy(panel.gameObject);
             }
 
             stack.Clear();
         }
+
+        
     }
 
 
