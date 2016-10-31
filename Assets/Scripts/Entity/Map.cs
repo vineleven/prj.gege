@@ -5,7 +5,7 @@ using System;
 
 public class Map {
 
-
+    public const int DIR_NONE = -100;
     public const int DIR_UP = 1;
     public const int DIR_RIGHT = 2;
     public const int DIR_DOWN = 3;
@@ -101,7 +101,7 @@ public class Map {
 
 
 
-    public int pos2index(float value)
+    public static int pos2index(float value)
     {
         if (value > 0)
         {
@@ -110,6 +110,41 @@ public class Map {
         else
         {
             return (int)(value - 0.5f);
+        }
+    }
+
+
+    public static int getDir(Vector3 cur, Vector3 next)
+    {
+        int iCur = pos2index(cur.y);
+        int jCur = pos2index(cur.x);
+
+        int iNext = pos2index(next.y);
+        int jNext = pos2index(next.x);
+
+        if (jNext > jCur)
+        {
+            return DIR_RIGHT;
+        }
+        else if (jNext < jCur)
+        {
+            return DIR_LEFT;
+        }
+        else
+        {
+            if (iNext > iCur)
+            {
+                return DIR_UP;
+            }
+            else if (iNext < iCur)
+            {
+                return DIR_DOWN;
+            }
+            else
+            {
+                return DIR_NONE;
+            }
+
         }
     }
 

@@ -10,11 +10,13 @@ public class Player : GameEntity
     int m_group;
     int m_index;
 
+    protected int m_dir1;
+    protected int m_dir2;
 
     protected List<Vector3> m_path = new List<Vector3>(2);
 
     // 记录下一个点
-    PosInfo m_nextPosInfo;
+    protected PosInfo m_nextPosInfo;
 
     public Player(string prefab, int group, int idx, float x, float y, float speed)
         : base(prefab)
@@ -47,10 +49,55 @@ public class Player : GameEntity
     }
 
 
-    public void findNextPath(int dir1, int dir2)
+    public void setDir(Vector3 offset)
+    {
+        int dir1, dir2;
+        if (offset.y > 0)
+            dir1 = Map.DIR_UP;
+        else
+            dir1 = Map.DIR_DOWN;
+
+        if (offset.x > 0)
+            dir2 = Map.DIR_RIGHT;
+        else
+            dir2 = Map.DIR_LEFT;
+
+        if (Mathf.Abs(offset.x) > Mathf.Abs(offset.y))
+        {
+            int temp = dir1;
+            dir1 = dir2;
+            dir2 = temp;
+        }
+
+        setDir(dir1, dir2);
+    }
+
+
+    public void setDir(int dir1, int dir2)
+    {
+        m_dir1 = dir1;
+        m_dir2 = dir2;
+        //Tools.Log("rnd dir:" + m_dir1 + " " + m_dir2);
+    }
+
+
+    public void findNextPath()
     {
         m_path.Clear();
-        MgrBattle.getMap().findPath(m_nextPosInfo.getDestPos(), dir1, dir2, m_path);
+        Vector3 curPos = getPosition();
+        MgrBattle.getMap().findPath(curPos, m_dir1, m_dir2, m_path);
+        if (m_path.Count > 0)
+        {
+            if (!m_nextPosInfo.getNextPos().Equals(m_path[0]))
+            {
+                int nextDir = Map.getDir(curPos, m_path[0]);
+                if (m_nextPosInfo.isNegative(nextDir))
+                {
+                    // 如果下个目标点有变化切是反方向，则立即改变
+                    gotoNext(curPos);
+                }
+            }
+        }
     }
 
 
@@ -62,32 +109,51 @@ public class Player : GameEntity
 
     public override void onUpdate()
     {
+        updatePos();
+	}
+
+
+    void updatePos()
+    {
         Vector3 curPos = getPosition();
-        if (!m_nextPosInfo.isArrived(curPos))
+        tryMoveWithCurPos(curPos);
+    }
+
+
+    void tryMoveWithCurPos(Vector3 curPos)
+    {
+        Vector3 nextPos = m_nextPosInfo.Lerp(MgrBattle.curTime);
+
+        if (m_nextPosInfo.isArrived(curPos))
         {
-            //Vector3 next = m_nextPosInfo.Lerp(curPos, MgrBattle.curTime);
-            //Tools.Log("move len:" + (curPos - next).magnitude + " time:" + Tools.getCurTime() + " delta:" + MgrBattle.deltaTime);
-            setPosition(m_nextPosInfo.Lerp(MgrBattle.curTime));
+            gotoNext(m_nextPosInfo.getNextPos());
         }
-        else if (m_path.Count > 0)
+        else
         {
-            Vector3 nextPos = m_path[0];
-            if (!m_nextPosInfo.isArrived(nextPos))
+            // 预测下个点
+            Vector3 nextNextPos = m_nextPosInfo.Lerp(MgrBattle.curTime + MgrBattle.deltaTime);
+            if (m_nextPosInfo.isArrived(nextNextPos))
             {
-                int time = (int)((nextPos - curPos).magnitude / m_speed);
-                //Tools.Log("move time:" + time + " moveLen:" + (nextPos - curPos).magnitude + " speed:" + m_speed + " deltaTime:" + (MgrBattle.curTime - ____timeNow) + " realTime:" + (Time.time - _____timeNow2));
-                m_nextPosInfo = new PosInfo(curPos, nextPos, time, MgrBattle.curTime + time);
-                m_path.RemoveAt(0);
-            }
-            else
-            {
-                m_path.RemoveAt(0);
-                // 到这里是目测是因为找到了一个跟当前坐标相同的点
-                Tools.LogWarn("----> no no no no. can't be here.");
+                gotoNext(nextPos);
             }
         }
 
-	}
+        setPosition(nextPos);
+    }
+
+
+    void gotoNext(Vector3 from)
+    {
+        if (m_path.Count > 0)
+        {
+            Vector3 nextPos = m_path[0];
+
+            int time = (int)((nextPos - from).magnitude / m_speed);
+            m_nextPosInfo = new PosInfo(from, nextPos, time, MgrBattle.curTime + time);
+
+            m_path.RemoveAt(0);
+        }
+    }
 
 
 
@@ -108,9 +174,27 @@ public class Player : GameEntity
         }
 
 
-        public Vector3 getDestPos()
+        public int getDir()
+        {
+            return Map.getDir(m_originPos, m_nextPos);
+        }
+
+
+        public bool isNegative(int dir)
+        {
+            return Mathf.Abs(getDir() - dir) == 2;
+        }
+
+
+        public Vector3 getNextPos()
         {
             return m_nextPos;
+        }
+
+
+        public void setNext(Vector3 destPos)
+        {
+            m_nextPos = destPos;
         }
 
 

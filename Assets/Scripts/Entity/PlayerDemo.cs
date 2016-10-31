@@ -3,17 +3,14 @@ using System.Collections;
 
 public class PlayerDemo : Player
 {
-
-
-    const int CHANGE_DIR_DELTA_TIME = 4000;
-    const float SPEED = 2f / 1000;
-
-
-    int m_dir1;
-    int m_dir2;
+    const int CHANGE_DIR_DELTA_TIME = 6000;
+    const float SPEED = 3f / 1000;
 
 
     long m_changeDirNextTime = 0;
+
+    long m_setDirTime = 0;
+
 
     public PlayerDemo(string prefab)
         : base(prefab, 0, 0, 15, 15, SPEED)
@@ -25,28 +22,45 @@ public class PlayerDemo : Player
 
     void randomDir()
     {
-        m_dir1 = Tools.Random(1, 5);
+        int dir1, dir2;
+        dir1 = Tools.Random(1, 5);
         do
         {
-            m_dir2 = Tools.Random(1, 5);
-        } while (m_dir1 == m_dir2 || Mathf.Abs(m_dir1 - m_dir2) == 2);
+            dir2 = Tools.Random(1, 5);
+        } while (dir1 == dir2 || Mathf.Abs(dir1 - dir2) == 2);
 
-        //Tools.Log("rnd dir:" + m_dir1 + " " + m_dir2);
+        setDir(dir1, dir2);
     }
 
+
+    public void findNextPathAuto()
+    {
+        m_setDirTime = MgrBattle.getCurTime() + 3000;
+        m_changeDirNextTime = MgrBattle.getCurTime() + CHANGE_DIR_DELTA_TIME;
+
+        findNextPath();
+    }
 
 
 	public override void onUpdate () {
         base.onUpdate();
+
+        // 玩家在操作
+        if (m_setDirTime > MgrBattle.getCurTime())
+            return;
+
         if (m_path.Count < 1)
         {
-            findNextPath(m_dir1, m_dir2);
+            int count = 0;
+            while (count++ < 10 && m_path.Count < 1)
+            {
+                findNextPath();
+            }
         }
 
-        if (m_changeDirNextTime < MgrBattle.curTime)
+        if (m_changeDirNextTime < MgrBattle.getCurTime())
         {
-
-            m_changeDirNextTime = MgrBattle.curTime + CHANGE_DIR_DELTA_TIME;
+            m_changeDirNextTime = MgrBattle.getCurTime() + CHANGE_DIR_DELTA_TIME;
             randomDir();
         }
 	}

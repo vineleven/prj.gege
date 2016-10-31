@@ -6,7 +6,7 @@ using Convert = System.Convert;
 using Exception = System.Exception;
 
 
-public class MgrNet : MgrBase
+public class MgrNet : EventBehaviour
 {
     static void registerCmds()
     {

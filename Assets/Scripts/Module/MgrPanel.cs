@@ -9,7 +9,7 @@ using Global;
 
 
 
-public class MgrPanel : MgrBase
+public class MgrPanel : EventBehaviour
 {
 
     /****************************** 应用扩展 start ********************************/

@@ -5,6 +5,7 @@ using Global;
 public abstract class PanelBase : EventHandler {
 
     public GameObject gameObject = null;
+    public RectTransform transform = null;
 
     public abstract string getResName();
 
@@ -18,6 +19,7 @@ public abstract class PanelBase : EventHandler {
     public PanelBase()
     {
         gameObject = MgrRes.newObject(getResName()) as GameObject;
+        transform = gameObject.transform as RectTransform;
     }
 
 

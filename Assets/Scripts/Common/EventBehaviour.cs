@@ -3,7 +3,8 @@ using System.Collections;
 using Global;
 
 
-public abstract class MgrBase : MonoBehaviour {
+
+public abstract class EventBehaviour : MonoBehaviour {
 
 
     private EventHandler m_eventHandler = new EventHandler();
@@ -34,4 +35,11 @@ public abstract class MgrBase : MonoBehaviour {
 
 
     public abstract void onDestory();
+
+
+    //public virtual void onDestory()
+    //{
+    //    // 强制隐藏该方法
+    //    Tools.LogError("you must check onDestory, it's importent.");
+    //}
 }

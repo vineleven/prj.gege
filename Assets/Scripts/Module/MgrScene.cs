@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class MgrScene : MgrBase
+public class MgrScene : EventBehaviour
 {
 
 	// Use this for initialization

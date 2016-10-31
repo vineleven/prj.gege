@@ -10,11 +10,11 @@ using Global;
 using UnityEngine;
 //using System.Reflection;
 
-class MgrSocket : MgrBase
+class MgrSocket : EventBehaviour
 {
 	//端口及IP  
-    //static IPEndPoint ipe = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 51234);
-    static IPEndPoint ipe = new IPEndPoint(IPAddress.Parse("192.168.1.124"), 51234);
+    static IPEndPoint ipe = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 51234);
+    //static IPEndPoint ipe = new IPEndPoint(IPAddress.Parse("192.168.1.124"), 51234);
 
 
     // 重新连接周期
@@ -145,7 +145,7 @@ class MgrSocket : MgrBase
         {
             m_reconncetTime = 150;
             Tools.Log("Fail Connect");
-            StartCoroutine(Connect());
+            //StartCoroutine(Connect());
 		}
 	}
 

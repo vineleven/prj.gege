@@ -6,7 +6,7 @@ using Global;
 
 
 
-public class MgrBattle : MgrBase
+public class MgrBattle : EventBehaviour
 {
 
 
@@ -19,6 +19,7 @@ public class MgrBattle : MgrBase
     static List<Player> m_players = new List<Player>();
 
 	static Player m_mainPlayer;
+    static PlayerDemo m_playerDemo;
 
     static int m_playerIndex;
 
@@ -82,6 +83,8 @@ public class MgrBattle : MgrBase
 
         startGame(null);
 
+        m_playerDemo = player;
+
         m_state = STATE_DEMO;
     }
 
@@ -105,6 +108,9 @@ public class MgrBattle : MgrBase
         }
 
         m_follower.SetTarget(null);
+
+        m_playerDemo = null;
+        m_mainPlayer = null;
 
         foreach (var p in m_players)
         {
@@ -172,7 +178,7 @@ public class MgrBattle : MgrBase
     }
 
 
-    static long getCurTime()
+    public static long getCurTime()
     {
         if (m_state == STATE_DEMO)
         {
@@ -221,11 +227,12 @@ public class MgrBattle : MgrBase
 
     public static void onDragJoy(GameEvent e)
     {
-        float rad = (float)e.getData();
-        Tools.Log("--- rad:" + rad);
+        Vector3 delta = (Vector3)e.getData();
+        //Tools.Log("--- rad:" + delta.ToString());
         if (m_state == STATE_DEMO)
         {
-            
+            m_playerDemo.setDir(delta);
+            m_playerDemo.findNextPath();
         }
     }
 }

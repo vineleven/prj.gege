@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System;
 using Global;
 
-public class MgrTimer : MgrBase
+public class MgrTimer : EventBehaviour
 {
 
 
