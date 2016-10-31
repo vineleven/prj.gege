@@ -9,8 +9,8 @@ using Global;
 
 
 
-public class MgrPanel : MonoBehaviour {
-
+public class MgrPanel : MgrBase
+{
 
     /****************************** 应用扩展 start ********************************/
 
@@ -49,7 +49,7 @@ public class MgrPanel : MonoBehaviour {
 
     public static void openJoyStick()
     {
-        openPanel(PanelJoyStick.getInstance());
+        openPanel(PanelJoystick.getInstance());
     }
 
 
@@ -159,6 +159,12 @@ public class MgrPanel : MonoBehaviour {
         {
             m_view_stack.Add(new List<PanelBase>());
         }
+    }
+
+
+    public override void onDestory()
+    {
+        disposeAllPanel();
     }
 
 

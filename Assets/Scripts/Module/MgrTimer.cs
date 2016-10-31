@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using System;
 using Global;
 
-public class MgrTimer : MonoBehaviour {
+public class MgrTimer : MgrBase
+{
 
 
     class TimerEvent
@@ -19,8 +20,6 @@ public class MgrTimer : MonoBehaviour {
             this.callback = callback;
             this.param = param;
         }
-
-
     }
 
 
@@ -32,7 +31,7 @@ public class MgrTimer : MonoBehaviour {
 	}
 
 
-    void OnDestroy()
+    public override void onDestory()
     {
         list.Clear();
     }

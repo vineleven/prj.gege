@@ -1,9 +1,19 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using System;
 
 public class Map {
 
+
+    public const int DIR_UP = 1;
+    public const int DIR_RIGHT = 2;
+    public const int DIR_DOWN = 3;
+    public const int DIR_LEFT = 4;
+    
+
+    public const int TILE_NORMAL = 1;
+	public const int TILE_PHY = 2;
 
 
 	int[][] m_tileData;
@@ -41,11 +51,16 @@ public class Map {
             for (int j = 0; j < col; j++)
             {
                 int r = Tools.Random(1, 10);
-                r = r > 8 ? 2 : 1;
+                r = r > 6 ? 2 : 1;
                 cols[j] = r;
             }
             m_tileData[i] = cols;
         }
+
+        // 避免player堵死
+        m_tileData[15][15] = TILE_NORMAL;
+        m_tileData[15][16] = TILE_NORMAL;
+        m_tileData[15][17] = TILE_NORMAL;
 	}
 
 
@@ -86,17 +101,111 @@ public class Map {
 
 
 
-    public class MapPath
+    public int pos2index(float value)
     {
+        if (value > 0)
+        {
+            return (int)(value + 0.5f);
+        }
+        else
+        {
+            return (int)(value - 0.5f);
+        }
+    }
 
+
+    // 算法有以下假定
+    // 1、0.5 为tile的宽度
+    // 2、坐标是从0，0点开始的
+
+    // 向指定方向找最多两个点(世界坐标)
+    public void findPath(Vector3 curPos, int dir1, int dir2, List<Vector3> list)
+    {
+        int i = pos2index(curPos.y);
+        int j = pos2index(curPos.x);
+
+        for (int count = 0; count < 2; count++)
+        {
+            MapPoint p = moveTo(i, j, dir1);
+            if (p != null)
+            {
+                list.Add(point2pos(p));
+				i = p.i;
+				j = p.j;
+            }
+            else
+            {
+                p = moveTo(i, j, dir2);
+				if (p != null)
+				{
+					list.Add(point2pos(p));
+					i = p.i;
+					j = p.j;
+				}
+                    
+            }
+        }
+    }
+
+
+    MapPoint moveTo(int i, int j, int dir)
+    {
+        switch (dir)
+        {
+            case DIR_UP:
+                return getMapPoint(i + 1, j);
+            case DIR_RIGHT:
+                return getMapPoint(i, j + 1);
+            case DIR_DOWN:
+                return getMapPoint(i - 1, j);
+            case DIR_LEFT:
+                return getMapPoint(i, j - 1);
+            default:
+                return null;
+        }
+    }
+
+
+    MapPoint getMapPoint(int i, int j)
+    {
+        if (checkMap(i, j))
+        {
+            return new MapPoint(i, j);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+
+    bool checkMap(int i, int j)
+    {
+        if(i < 0 || i >= m_tileData.Length)
+            return false;
+
+        if(j < 0 || j >= m_tileData[i].Length)
+            return false;
+
+        return m_tileData[i][j] == TILE_NORMAL;
+    }
+
+
+    Vector3 point2pos(MapPoint p)
+    {
+        return new Vector3(p.j, p.i, 0);
     }
 
 
 
-    public void findPath(int curX, int curY)
+    class MapPoint
     {
-        int up = m_tileData
+        public MapPoint(int i, int j)
+        {
+            this.i = i;
+            this.j = j;
+        }
+        public int i;
+        public int j;
     }
-
-	
 }

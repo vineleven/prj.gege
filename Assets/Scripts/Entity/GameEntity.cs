@@ -1,14 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class GameEntity
+public abstract class GameEntity
 {
     public GameObject gameObject;
     public Transform transform;
 
 
-    public float m_x;
-    public float m_y;
+    private bool m_bDisposed = false;
 
 
     public GameEntity(string prefabName)
@@ -19,29 +18,34 @@ public class GameEntity
 
 
     public virtual void dispose(){
+        m_bDisposed = true;
         GameObject.Destroy(gameObject);
         gameObject = null;
         transform = null;
     }
 
 
-    public void setPosition(float x, float y)
+    public bool isDisposed()
     {
-        m_x = x;
-        m_y = y;
-        transform.position = new Vector3(x, y, 0);
+        return m_bDisposed;
     }
 
 
-    public float getX()
+    public virtual void setPosition(float x, float y)
     {
-        return m_x;
+        setPosition(new Vector3(x, y, 0));
     }
 
 
-    public float getY()
+    public virtual void setPosition(Vector3 p)
     {
-        return m_y;
+        transform.position = p;
+    }
+
+
+    public Vector3 getPosition()
+    {
+        return transform.position;
     }
 
 
@@ -53,7 +57,14 @@ public class GameEntity
     }
 
 
-	
-	public virtual void update () {
-	}
+
+    public void update()
+    {
+        if(!m_bDisposed)
+            onUpdate();
+    }
+
+
+
+    public abstract void onUpdate();
 }

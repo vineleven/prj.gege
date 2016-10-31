@@ -10,9 +10,11 @@ public class SceneMain : SceneBase {
         MgrPanel.openMain();
         MgrPanel.openDebugInfo();
         MgrPanel.openInputName();
+        MgrPanel.openJoyStick();
 
 
         addEventCallback(EventId.MSG_START_GAME, onStartGame);
+        addEventCallback(EventId.MSG_DISCONNECTED, onDisconnected);
         startProcMsg();
 	}
 
@@ -22,7 +24,11 @@ public class SceneMain : SceneBase {
         Tools.Log("start Game");
         MgrPanel.disposeAllPanel(MgrPanel.LAYER_UI);
         MgrPanel.openJoyStick();
+    }
 
+
+    public void onDisconnected(GameEvent e)
+    {
 
     }
 

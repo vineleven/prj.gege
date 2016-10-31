@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 
 
 
-public class PanelJoyStick : PanelBase {
+public class PanelJoystick : PanelBase {
 
     public override int getLayer()
     {
@@ -26,11 +26,11 @@ public class PanelJoyStick : PanelBase {
     }
 
 
-    public static PanelJoyStick inst;
-    public static PanelJoyStick getInstance()
+    public static PanelJoystick inst;
+    public static PanelJoystick getInstance()
     {
         if (inst == null)
-            inst = new PanelJoyStick();
+            inst = new PanelJoystick();
 
         return inst;
     }
@@ -44,13 +44,10 @@ public class PanelJoyStick : PanelBase {
 
 
     private GameObject m_joy_gameObjcet;
-    private Transform m_joy_transform;
+    private RectTransform m_joy_transform;
 
 	Vector3 originPos;
 
-	public delegate void OnDragDelegate(Vector3 dir);
-
-	public OnDragDelegate onDragListener = null;
 
 	float len = 50;
 
@@ -58,7 +55,7 @@ public class PanelJoyStick : PanelBase {
     public override void onBuild(Hashtable param)
     {
         m_joy_gameObjcet = gameObject.transform.FindChild("Circle").gameObject;
-        m_joy_transform = m_joy_gameObjcet.transform;
+        m_joy_transform = m_joy_gameObjcet.transform as RectTransform;
 
 		originPos = m_joy_transform.localPosition;
 
@@ -80,8 +77,10 @@ public class PanelJoyStick : PanelBase {
 
 	void OnDrag(GameObject go, PointerEventData eventData)
 	{
-		Vector2 pos = eventData.delta;
-		Vector3 delta = new Vector3 (pos.x, pos.y);
+        Vector2 local;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(m_joy_transform, Input.mousePosition, MgrScene.uiCamera, out local);
+
+        Vector3 delta = new Vector3(local.x, local.y);
 		updateCirclePos (delta);
 	}
 
@@ -94,13 +93,23 @@ public class PanelJoyStick : PanelBase {
 
 	void updateCirclePos(Vector3 delta)
 	{
-        m_joy_transform.localPosition = m_joy_transform.localPosition + delta;
-        if (m_joy_transform.localPosition.magnitude > len) 
-		{
-            m_joy_transform.localPosition = m_joy_transform.localPosition.normalized * len;
-		}
+        //if(delta.magnitude > len)
+        //    delta = Vector3.ClampMagnitude(delta, len);
 
-		if (onDragListener != null)
-            onDragListener(m_joy_transform.localPosition.normalized);
+        //m_joy_transform.localPosition = delta;
+
+
+
+        m_joy_transform.localPosition = m_joy_transform.localPosition + delta;
+        if (m_joy_transform.localPosition.magnitude > len)
+        {
+            m_joy_transform.localPosition = m_joy_transform.localPosition.normalized * len;
+        }
+
+        float rad = Mathf.Atan2(m_joy_transform.localPosition.y, m_joy_transform.localPosition.x);
+        float rad2 = Mathf.Atan2(delta.y, delta.x);
+        EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_UPDATE_JOYSTICK, rad);
+
+        Tools.Log("rad:" + rad + " rad local:" + rad2);
 	}
 }

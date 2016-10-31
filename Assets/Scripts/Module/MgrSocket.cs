@@ -10,7 +10,7 @@ using Global;
 using UnityEngine;
 //using System.Reflection;
 
-class MgrSocket: MonoBehaviour
+class MgrSocket : MgrBase
 {
 	//端口及IP  
     //static IPEndPoint ipe = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 51234);
@@ -41,6 +41,28 @@ class MgrSocket: MonoBehaviour
 	void Awake()
 	{
 	}
+
+
+    public override void onDestory()
+    {
+        Tools.Log("net destory");
+        if (m_socket.Connected)
+        {
+            try
+            {
+                m_socket.Shutdown(SocketShutdown.Both);
+                m_socket.Close();
+            }
+            catch (Exception e)
+            {
+                Tools.LogError("close socket:" + e.Message);
+            }
+        }
+
+        m_socket = null;
+        m_buffer.reset();
+        m_reconncetTime = 100;
+    }
 
 
 	void Start(){
@@ -80,25 +102,6 @@ class MgrSocket: MonoBehaviour
     }
 
 
-    void OnDestroy()
-    {
-		Tools.Log("net destory");
-        if (m_socket.Connected)
-        {
-			try{
-				m_socket.Shutdown (SocketShutdown.Both);
-				m_socket.Close ();
-			} catch(Exception e){
-				Tools.LogError ("close socket:" + e.Message);
-			}
-		}
-
-		m_socket = null;
-        m_buffer.reset();
-        m_reconncetTime = 100;
-	}
-
-
 	IEnumerator Connect()
 	{
 		Tools.Log ("begin connet.");
@@ -125,6 +128,8 @@ class MgrSocket: MonoBehaviour
 
 			Tools.Log("Connect suc.");
 			Receive(m_socket);
+
+            EventDispatcher.getGlobalInstance().dispatchUiEvent(EventId.MSG_CONNECTED);
 		}
 		catch (Exception e)
 		{

@@ -6,7 +6,7 @@ using Convert = System.Convert;
 using Exception = System.Exception;
 
 
-public class MgrNet : MonoBehaviour
+public class MgrNet : MgrBase
 {
     static void registerCmds()
     {
@@ -46,7 +46,7 @@ public class MgrNet : MonoBehaviour
     }
 
 
-
+    // 周期性同步
     public static void syncServerTime()
     {
         if (MgrSocket.connected())
@@ -190,12 +190,11 @@ public class MgrNet : MonoBehaviour
 
 
     /************************************************************/
-    EventHandler m_eventHandler;
     // Use this for initialization
     void Awake() {
-        m_eventHandler = new EventHandler();
-        m_eventHandler.addEventCallback(EventId.GLOBAL_RESPONSE, responseCallback);
-        m_eventHandler.startProcMsg();
+        addEventCallback(EventId.GLOBAL_RESPONSE, responseCallback);
+        addEventCallback(EventId.MSG_CONNECTED, onConnected);
+        startProcMsg();
 
         registerCmds();
 	}
@@ -247,11 +246,14 @@ public class MgrNet : MonoBehaviour
     }
 
 
-    void OnDestroy()
+    void onConnected(GameEvent e)
     {
-        if (m_eventHandler != null)
-            m_eventHandler.stopProcMsg();
 
+    }
+
+
+    public override void onDestory()
+    {
         m_responses.Clear();
     }
 

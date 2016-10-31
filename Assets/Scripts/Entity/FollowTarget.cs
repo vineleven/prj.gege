@@ -9,7 +9,7 @@ public class FollowTarget : MonoBehaviour {
 	float height = -5.7f;
 	float distance = -4.2f;
 	float xRotation = -60;
-	float damping = 2;
+	public float damping = 3;
 
 
 	public static FollowTarget Get(GameObject go)
@@ -48,7 +48,7 @@ public class FollowTarget : MonoBehaviour {
 		if (dis > 10) {
 			transform.position = destPos;
 		} else {
-			transform.position = Vector3.Lerp (myPos, destPos, Time.deltaTime * damping);
+            transform.position = Vector3.Lerp(myPos, destPos, Time.deltaTime * damping);
 		}
 	}
 }

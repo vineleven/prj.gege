@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class MgrScene : MonoBehaviour {
+public class MgrScene : MgrBase
+{
 
 	// Use this for initialization
 
@@ -16,6 +17,11 @@ public class MgrScene : MonoBehaviour {
 		battleCamera = GameObject.Find("BattleCamera").GetComponent<Camera>();
 //		battleCamera.enabled = false;
 	}
+
+
+    public override void onDestory()
+    {
+    }
 
 
 	static SceneBase m_curScene;
