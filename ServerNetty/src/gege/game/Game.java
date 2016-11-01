@@ -6,6 +6,7 @@ import gege.common.EventHandler;
 import gege.common.GameEvent;
 import gege.common.GameSession;
 import gege.common.Request;
+import gege.common.StateData;
 import gege.common.SyncQueue;
 import gege.common.TickThread;
 import gege.consts.Cmd;
@@ -143,6 +144,10 @@ public class Game extends TickThread {
 					l.onRequest(req);
 				count++;
 			}
+			
+			if(m_requestQueue.size() > 0)
+				Logger.warn("request is too many.");
+			
 		} catch(Exception e){
 			e.printStackTrace();
 		}
@@ -189,17 +194,11 @@ public class Game extends TickThread {
 	}
 	
 	
-	public void pushMsg(GameSession session, String msg){
+	public void pushMsg(GameSession session, String msg, int errorCode){
 		JSONObject data = new JSONObject();
 		data.put("msg", msg);
+		data.put("code", errorCode);
 		session.send(Cmd.S2C_SHOW_MSG, data);
-	}
-	
-	
-	public void pushErrorCode(GameSession session, int code){
-		JSONObject data = new JSONObject();
-		data.put("code", code);
-		session.send(Cmd.S2C_ERROR_CODE, data);
 	}
 	
 	
@@ -290,10 +289,10 @@ public class Game extends TickThread {
 		
 		Room room = m_rooms.get(idx);
 		if(room.empty()){
-			pushMsg(req.getSession(), "Room is empty, please refresh room center.");
+			pushMsg(req.getSession(), "Room is empty, please refresh room center.", ErrorCode.NONE);
 			return;
 		}else if(room.full()){
-			pushMsg(req.getSession(), "Room is full, please refresh room center.");
+			pushMsg(req.getSession(), "Room is full, please refresh room center.", ErrorCode.NONE);
 			return;
 		}
 		
@@ -313,7 +312,7 @@ public class Game extends TickThread {
 			
 			m_rooms.get(idx).level(session);
 		}else if(session.inState(GameState.IN_GAME)){
-			pushMsg(session, "game is start.");
+			pushMsg(session, "game is start.", ErrorCode.NONE);
 		}
 	}
 	
@@ -323,7 +322,7 @@ public class Game extends TickThread {
 			int roomIdx = req.getSession().getStateData().int1;
 			Visitor v = m_rooms.get(roomIdx).getVisitor(req.getSession());
 			if(!v.isHost()){
-				pushMsg(req.getSession(), "only host can start game.");
+				pushMsg(req.getSession(), "only host can start game.", ErrorCode.NONE);
 				return;
 			}
 			
@@ -342,25 +341,43 @@ public class Game extends TickThread {
 			m_worlds.add(world);
 			world.start();
 		} else {
-			pushErrorCode(req.getSession(), ErrorCode.NOT_IN_ROOM);
+			pushMsg(req.getSession(), "your are not in room.", ErrorCode.NOT_IN_ROOM);
 		}
 	}
 	
 	
 	private void reqPlayerPos(Request req){
 		if(!req.getSession().inState(GameState.IN_GAME)){
+			pushMsg(req.getSession(), "your are not in game.", ErrorCode.NOT_IN_GAME);
+			return;
 		}
 		
-		long arriveTime = req.data.getLong("t");
-		JSONArray pos = req.data.getJSONArray("p");
-		float x = (float) pos.getDouble(0);
-		float y = (float) pos.getDouble(1);
+		JSONObject data = req.data;
 		
-		Logger.debug("---->" + req.data.toString());
+		long arriveTime = data.getLong("t");
+		float x = (float) data.getDouble("x");
+		float y = (float) data.getDouble("y");
+		
+		StateData sData = req.getSession().getStateData();
+		
+		World world = m_worlds.get(sData.int1);
+		
+		Player player = world.getPlayer(sData.int2, sData.int3);
+		
+		if(player.tryMove(x, y, arriveTime, false)){
+			world.foreach(p -> {
+				if(!p.equalsPlayer(player)){
+					// 直接这个数据广播，节省一点
+					data.put("g", p.getGroup());
+					data.put("i", p.getIndex());
+					p.getSession().send(Cmd.C2S_PLAYER_POS, data);
+				}
+			});
+		}
+		
+//		Logger.debug("---->" + req.data.toString());
 	}
 	
-	
-
 	
 	class LaterCall{
 		long time;

@@ -50,6 +50,8 @@ public class MgrBattle : EventBehaviour
 	// Use this for initialization
 	void Start () {
         MgrNet.registerCmd(Cmd.C2S_START_GAME, rspStartGame);
+        MgrNet.registerCmd(Cmd.S2C_PLAYER_POS, rspPlayerPos);
+
         m_follower = FollowTarget.Get(MgrScene.battleCamera.gameObject);
 	}
 
@@ -95,6 +97,19 @@ public class MgrBattle : EventBehaviour
     {
         // 多线程问题
         MgrTimer.callLaterTime(0, loadingGame, data);
+    }
+
+
+    static void rspPlayerPos(Hashtable data)
+    {
+        MgrTimer.callLaterTime(0, loadingGame, data);
+    }
+
+
+    static void receivePlayerPos(GameEvent e)
+    {
+        Hashtable data = e.getData() as Hashtable;
+
     }
 
 

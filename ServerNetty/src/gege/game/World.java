@@ -110,7 +110,12 @@ public class World {
 	}
 	
 	
-	private void foreach(Consumer<Player> action){
+	public Player getPlayer(int group, int index){
+		return m_group.get(group).get(index);
+	}
+	
+	
+	public void foreach(Consumer<Player> action){
 		for (int i = 0; i < m_group.size(); i++) {
 //			int size = m_group.get(i).size();
 //			for (int j = 0; j < size; j++) {

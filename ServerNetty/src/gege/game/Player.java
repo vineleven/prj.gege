@@ -1,11 +1,18 @@
 package gege.game;
 
 import gege.common.GameSession;
+import gege.util.Logger;
 import gege.util.Mathf;
 
 import org.json.JSONObject;
 
 public class Player extends GameEntity{
+	
+//	final public static int STATE_READY = 0;
+	final public static int STATE_NORMAL = 1;
+	final public static int STATE_DEAD = 2;
+	final public static int STATE_INVINCIBLE = 3;
+	
 	
 	private GameSession m_session;
 	
@@ -13,30 +20,32 @@ public class Player extends GameEntity{
 	
 	private int m_group;
 	
-	// 起始点
-	private float m_originX;
-	private float m_originY;
-	
 	private float m_speed = 3f / 1000;
 	
-	// 下个点
-	private float m_nextX;
-	private float m_nextY;
-	
-	
-	private long m_arriveTime;
+	private PosInfo m_nextPos;
 	
 	// 累计误差
 	private float m_cumulativeErrorValue = 0;
 	
 	// 验证标记
 	private boolean m_bVerify = false;
+
 	
+	private int m_state = STATE_NORMAL;
 	
 	
 	public Player(GameSession session, int index) {
 		m_session = session;
 		m_index = index;
+	}
+	
+	
+	public void init(int group, int startCol, int startRow, float speed){
+		m_group = group;
+		m_nextPos = new PosInfo(startCol, startRow, startCol, startRow, 1, 0);
+		m_speed = speed;
+		
+		setPosition(startCol, startRow);
 	}
 	
 	
@@ -60,20 +69,17 @@ public class Player extends GameEntity{
 	}
 	
 	
-	public void init(int group, int startCol, int startRow, float speed){
-		m_group = group;
-		m_originX = startCol;
-		m_originY = startRow;
-		m_speed = speed;
-		
-		setPosition(startCol, startRow);
+	public boolean equalsPlayer(Player p) {
+		return p.getGroup() == getGroup() && p.getIndex() == getIndex();
 	}
+	
+	
 
 	
 	public JSONObject getStartInfo(){
 		JSONObject info = new JSONObject();
-		info.put("x", m_originX);
-		info.put("y", m_originY);
+		info.put("x", m_nextPos.m_originX);
+		info.put("y", m_nextPos.m_originY);
 		info.put("s", m_speed);
 		info.put("g", m_group);
 		info.put("i", m_index);
@@ -83,15 +89,50 @@ public class Player extends GameEntity{
 	
 	
 	private void setNextPos(float nextX, float nextY, long arriveTime){
-		m_nextX = nextX;
-		m_nextY = nextY;
-		m_arriveTime = arriveTime;
+		int delta = (int) (arriveTime - Game.getInstance().getCurTime());
+		m_nextPos.reset(x, y, nextX, nextY, delta, arriveTime);
+	}
+	
+	
+	private void updatePos(){
+		if(!m_nextPos.isArrived(x, y)){
+			float t = (Game.getInstance().getCurTime() - m_nextPos.m_arriveTime) / m_nextPos.m_delta;
+			x = m_nextPos.lerpX(t);
+			y = m_nextPos.lerpY(t);
+		}
 	}
 	
 	
 	@Override
 	public void onUpdate() {
-		x = Mathf.lerp(m_originX, to, t)
+		switch (m_state) {
+		case STATE_NORMAL:
+			onUpdateNormal();
+			break;
+		case STATE_DEAD:
+			onUpdateDead();
+			break;
+		case STATE_INVINCIBLE:
+			onUpdateInvincible();
+			break;
+		default:
+			Logger.error("can't find player state:" + m_state);
+			break;
+		}
+	}
+	
+	
+	private void onUpdateNormal(){
+		updatePos();
+	}
+	
+	
+	private void onUpdateDead(){
+	}
+	
+	
+	private void onUpdateInvincible(){
+		updatePos();
 	}
 	
 	
@@ -103,7 +144,7 @@ public class Player extends GameEntity{
 	 * @return
 	 */
 	public boolean tryMove(float nextX, float nextY, long arriveTime, boolean verify){
-		if(arriveTime <= m_arriveTime){
+		if(arriveTime <= m_nextPos.m_arriveTime){
 			// 非法数据包，直接丢弃
 			return false;
 		}
@@ -136,7 +177,7 @@ public class Player extends GameEntity{
 //			// 或者强制延迟客户端进行修正(TODO)
 //		}
 		
-		if(arriveTime - m_arriveTime > 999){
+		if(arriveTime - m_nextPos.m_arriveTime > 999){
 			// 超时重连或者玩家长时间未操作
 		}
 		
@@ -145,7 +186,8 @@ public class Player extends GameEntity{
 		setNextPos(nextX, nextY, arriveTime);
 		
 		
-		return false;
+		return true;
 	}
+	
 	
 }

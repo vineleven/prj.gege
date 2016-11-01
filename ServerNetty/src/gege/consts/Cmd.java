@@ -28,11 +28,10 @@ public interface Cmd {
 	// 玩家位置更新
     int C2S_PLAYER_POS = 8;
     
+    // 广播位置
+    int S2C_PLAYER_POS = 9;
+    
 	
 	// 返回错误消息
 	int S2C_SHOW_MSG = 100;
-	
-	// 返回错误码
-	int S2C_ERROR_CODE = 101;
-	
 }

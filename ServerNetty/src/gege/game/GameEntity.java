@@ -11,8 +11,7 @@ public abstract class GameEntity {
 	
 	
 	
-	
-	public void setPosition(float x, float y){
+	protected void setPosition(float x, float y){
 		this.x = x;
 		this.y = y;
 	}

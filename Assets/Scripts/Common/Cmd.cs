@@ -30,20 +30,22 @@ public class Cmd
     // 玩家位置更新
     public const int C2S_PLAYER_POS = 8;
 
+    // 广播位置
+    public const int S2C_PLAYER_POS = 9;
+
     // 消息提示
     public const int S2C_SHOW_MSG = 100;
-
-    // 返回错误码
-    public const int S2C_ERROR_CODE = 101;
 }
 
 
 public class ErrorCode
 {
+    public const int NONE = 0;
+
     // 不在房间
-    public const int NOT_IN_ROOM = 0;
+    public const int NOT_IN_ROOM = 1;
 
     // 不在游戏中
-    public const int NOT_IN_GAME = 1;
+    public const int NOT_IN_GAME = 2;
 }
 

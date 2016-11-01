@@ -2,7 +2,6 @@
 using System.Collections;
 
 public enum EventId {
-    MSG_RESPONSE,
     MSG_ERROR_CODE,
     
     MSG_START_GAME,

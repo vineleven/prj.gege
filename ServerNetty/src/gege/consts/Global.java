@@ -26,9 +26,9 @@ public interface Global {
 	// game
 	int GAME_UPDATE_INTERVAL = 50;				// game更新间隔，主要影响请求响应
 	int GAME_LOGIC_INTERVAL = 300;				// 逻辑（时间）更新间隔
-	int GAME_PROCESS_REQUEST_INTERVAL = 50;		// 请求处理间隔
+	
 	int GAME_MAX_PROCESS_REQUEST = 50;			// 请求处理上限
-	int GAME_REQUEST_QUEUE_MAX_SIZE = 128;		// 游戏请求列队最大值
+	int GAME_REQUEST_QUEUE_MAX_SIZE = 256;		// 游戏请求列队最大值
 	
 	
 	String MSG_END_FLAG = "$";

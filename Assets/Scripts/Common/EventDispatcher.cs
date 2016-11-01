@@ -2,6 +2,14 @@
 using System.Collections.Generic;
 using Global;
 
+
+/**
+ * 
+ * 这个类是有问题的，并非线程安全，目前只对ui Event上锁
+ * 
+ * 在多线程下add和dispatch可能出现未知bug
+ * 
+ */
 public class EventDispatcher {
 
 	private static EventDispatcher inst = new EventDispatcher();
@@ -86,9 +94,10 @@ public class EventDispatcher {
             this.data = data;
         }
     }
+
     private LinkedList<UiEvent> m_uiEvent = new LinkedList<UiEvent>();
     /**
-     * 非UI线程不能调整UI，故放入UI线程更新
+     * 放入下一帧处理
      */
     public void dispatchUiEvent(EventId eid, object data = null)
     {
@@ -105,7 +114,7 @@ public class EventDispatcher {
         {
             next = node.Next;
             e = node.Value;
-            
+
             m_uiEvent.Remove(node);
             node = next;
 
@@ -132,6 +141,8 @@ public class EventDispatcher {
                 }
             }
         }
+
+        m_uiEvent.Clear();
 	}
 
 

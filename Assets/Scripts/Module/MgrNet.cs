@@ -16,7 +16,6 @@ public class MgrNet : EventBehaviour
         //registerCmd(Cmd.C2S_START_GAME, rspStartGame);
 
         registerCmd(Cmd.S2C_SHOW_MSG, rspShowMsg);
-        registerCmd(Cmd.S2C_ERROR_CODE, rspErrorCode);
     }
 
 
@@ -33,21 +32,6 @@ public class MgrNet : EventBehaviour
     static void rspShowMsg(Hashtable data)
     {
         string msg = data["msg"] as string;
-        if (!string.IsNullOrEmpty(msg))
-        {
-            MgrTimer.callLaterTime(0, showMsg, msg);
-        }
-    }
-
-
-    static void showMsg(object msg)
-    {
-        MgrPanel.openDialog("Server Msg:" + msg);
-    }
-
-
-    static void rspErrorCode(Hashtable data)
-    {
         int code = Convert.ToInt32(data["code"]);
         switch (code)
         {
@@ -59,6 +43,17 @@ public class MgrNet : EventBehaviour
                 Tools.LogError("unknown error code:" + code);
                 break;
         }
+
+        if (!string.IsNullOrEmpty(msg))
+        {
+            MgrTimer.callLaterTime(0, showMsg, msg);
+        }
+    }
+
+
+    static void showMsg(object msg)
+    {
+        MgrPanel.openDialog("Server Msg:" + msg);
     }
 
 
@@ -218,6 +213,7 @@ public class MgrNet : EventBehaviour
 
     /************************************************************/
     // Use this for initialization
+    static LinkedList<Hashtable> m_responses = new LinkedList<Hashtable>();
     void Awake() {
         addEventCallback(EventId.MSG_RESPONSE, responseCallback);
         addEventCallback(EventId.MSG_CONNECTED, onConnected);
@@ -235,41 +231,52 @@ public class MgrNet : EventBehaviour
     // Update is called once per frame
     void Update()
     {
+        lock (m_responses)
+        {
+            foreach (var rsp in m_responses)
+            {
+                if (rsp.Contains(Consts.MSG_KEY_CMD))
+                {
+                    try
+                    {
+                        int cmd = Convert.ToInt32(rsp[Consts.MSG_KEY_CMD]);
+                        if (m_responseCallbacks.ContainsKey(cmd))
+                            if (rsp.ContainsKey(Consts.MSG_KEY_DATA))
+                            {
+                                Hashtable data = rsp[Consts.MSG_KEY_DATA] as Hashtable;
+                                m_responseCallbacks[cmd].Invoke(data);
+                            }
+                    }
+                    catch (Exception ex)
+                    {
+                        Tools.LogError("responseCallback:" + ex.Message);
+                        Tools.LogError(ex.StackTrace);
+                    }
+                }
+            }
+
+            m_responses.Clear();
+        }
     }
 
 
-    void responseCallback(GameEvent e)
+    public static void response(Hashtable rsp)
     {
-        Hashtable rsp = e.getData() as Hashtable;
-        if (rsp.Contains(Consts.MSG_KEY_CMD))
+        lock (m_responses)
         {
-            try
-            {
-                int cmd = Convert.ToInt32(rsp[Consts.MSG_KEY_CMD]);
-                if (m_responses.ContainsKey(cmd))
-                    if (rsp.ContainsKey(Consts.MSG_KEY_DATA))
-                    {
-                        Hashtable data = rsp[Consts.MSG_KEY_DATA] as Hashtable;
-                        m_responses[cmd].Invoke(data);
-                    }
-            }
-            catch (Exception ex)
-            {
-                Tools.LogError("responseCallback:" + ex.Message);
-                Tools.LogError(ex.StackTrace);
-            }
+            m_responses.AddLast(rsp);
         }
     }
 
 
     public delegate void OnResponse(Hashtable data);
-    static Dictionary<int, OnResponse> m_responses = new Dictionary<int, OnResponse>();
+    static Dictionary<int, OnResponse> m_responseCallbacks = new Dictionary<int, OnResponse>();
     public static void registerCmd(int cmd, OnResponse callback)
     {
-        if (m_responses.ContainsKey(cmd))
+        if (m_responseCallbacks.ContainsKey(cmd))
             Tools.LogWarn("register cmd duplicate cmd:" + cmd);
         else
-            m_responses.Add(cmd, callback);
+            m_responseCallbacks.Add(cmd, callback);
     }
 
 
@@ -281,7 +288,7 @@ public class MgrNet : EventBehaviour
 
     public override void onDestory()
     {
-        m_responses.Clear();
+        m_responseCallbacks.Clear();
     }
 
 

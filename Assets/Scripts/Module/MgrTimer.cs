@@ -23,7 +23,7 @@ public class MgrTimer : EventBehaviour
     }
 
 
-    static LinkedList<TimerEvent> list = new LinkedList<TimerEvent>();
+    static LinkedList<TimerEvent> m_list = new LinkedList<TimerEvent>();
 
 
 
@@ -33,7 +33,7 @@ public class MgrTimer : EventBehaviour
 
     public override void onDestory()
     {
-        list.Clear();
+        m_list.Clear();
     }
 
 
@@ -43,9 +43,8 @@ public class MgrTimer : EventBehaviour
         try
         {
             EventDispatcher.getGlobalInstance().procUiEvent();
-
             var curTime = Tools.getCurTime();
-            var node = list.First;
+            var node = m_list.First;
 
             while (node != null)
             {
@@ -53,7 +52,7 @@ public class MgrTimer : EventBehaviour
                 var next = node.Next;
                 if (e.endTime <= curTime)
                 {
-                    list.Remove(node);
+                    m_list.Remove(node);
                     e.callback(e.param);
                 }
 
@@ -75,7 +74,7 @@ public class MgrTimer : EventBehaviour
      */
     public static void callLaterTime(int time, CallbackWithParam callback, object param = null)
     {
-        list.AddLast(new TimerEvent(time + Tools.getCurTime(), callback, param));
+        m_list.AddLast(new TimerEvent(time + Tools.getCurTime(), callback, param));
     }
 }
 

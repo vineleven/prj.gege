@@ -176,7 +176,7 @@ class MgrSocket : EventBehaviour
                     Tools.Log("receive msg suc:" + receive);
 
                     var rsp = Json.DecodeMap(receive);
-                    EventDispatcher.getGlobalInstance().dispatchEvent(EventId.MSG_RESPONSE, rsp);
+                    MgrNet.response(rsp);
 				} else {
                     m_buffer.append(m_transfer_buffer, i, 1);
 				}

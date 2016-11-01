@@ -240,13 +240,11 @@ public class Player : GameEntity
 
         public Hashtable ToData()
         {
-            ArrayList p = new ArrayList();
-            p.Add(m_nextPos.x);
-            p.Add(m_nextPos.y);
-
             Hashtable data = new Hashtable();
-            data["p"] = p;
             data["t"] = m_arriveTime;
+            data["x"] = m_nextPos.x;
+            data["y"] = m_nextPos.y;
+
             return data;
         }
     }
