@@ -247,8 +247,11 @@ public class Game extends TickThread {
 	
 	
 	private void reqNewRoom(Request req){
-		if(!req.getSession().inState(GameState.IDLE))
+		if(!req.getSession().inState(GameState.IDLE)){
+			// 可能断线重连或者重启游戏
+			pushMsg(req.getSession(), "your are in game or in room.", ErrorCode.NOT_IN_IDLE);
 			return;
+		}
 		
 		int count = req.data.getInt("sideCount");
 		if(count < 1)
@@ -370,7 +373,7 @@ public class Game extends TickThread {
 					// 直接这个数据广播，节省一点
 					data.put("g", p.getGroup());
 					data.put("i", p.getIndex());
-					p.getSession().send(Cmd.C2S_PLAYER_POS, data);
+					p.getSession().send(Cmd.S2C_PLAYER_POS, data);
 				}
 			});
 		}

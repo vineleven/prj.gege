@@ -46,14 +46,14 @@ public class MgrNet : EventBehaviour
 
         if (!string.IsNullOrEmpty(msg))
         {
-            MgrTimer.callLaterTime(0, showMsg, msg);
+            MgrPanel.openDialog("Server Msg:" + msg);
         }
     }
 
 
     static void showMsg(object msg)
     {
-        MgrPanel.openDialog("Server Msg:" + msg);
+        
     }
 
 
@@ -215,7 +215,6 @@ public class MgrNet : EventBehaviour
     // Use this for initialization
     static LinkedList<Hashtable> m_responses = new LinkedList<Hashtable>();
     void Awake() {
-        addEventCallback(EventId.MSG_RESPONSE, responseCallback);
         addEventCallback(EventId.MSG_CONNECTED, onConnected);
         startProcMsg();
 
@@ -282,7 +281,7 @@ public class MgrNet : EventBehaviour
 
     void onConnected(GameEvent e)
     {
-
+        // 这个是其他线程发来的消息
     }
 
 

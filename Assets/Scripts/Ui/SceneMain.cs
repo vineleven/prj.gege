@@ -13,7 +13,7 @@ public class SceneMain : SceneBase {
         MgrPanel.openInputName();
 
 
-        addEventCallback(EventId.MSG_START_GAME, onStartGame);
+        addEventCallback(EventId.MSG_GAME_START, onStartGame);
         addEventCallback(EventId.MSG_DISCONNECTED, onDisconnected);
         startProcMsg();
 	}

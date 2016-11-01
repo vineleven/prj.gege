@@ -79,7 +79,7 @@ public class MgrBattle : EventBehaviour
         PlayerDemo player = new PlayerDemo("Player1");
 
         player.transform.SetParent(m_map.getGround());
-        player.set2Main();
+        //player.set2Main();
 
         m_follower.SetTarget(player.transform);
 
@@ -95,14 +95,43 @@ public class MgrBattle : EventBehaviour
 
     static void rspStartGame(Hashtable data)
     {
-        // 多线程问题
-        MgrTimer.callLaterTime(0, loadingGame, data);
+        m_playerIndex = Convert.ToInt32(data["idx"]);
+        m_group = Convert.ToInt32(data["group"]);
+
+        long startTime = Convert.ToInt64(data["time"]);
+        ArrayList mapData = data["map"] as ArrayList;
+        ArrayList players = data["list"] as ArrayList;
+
+        clear();
+
+        m_map = new Map(mapData);
+        m_map.CreateMap();
+
+        Hashtable pData;
+        int group, idx;
+        float x, y, speed;
+        for (int i = 0; i < players.Count; i++)
+        {
+            pData = players[i] as Hashtable;
+            group = Convert.ToInt32(pData["g"]);
+            x = Convert.ToSingle(pData["x"]);
+            y = Convert.ToSingle(pData["y"]);
+            speed = Convert.ToSingle(pData["s"]);
+            idx = Convert.ToInt32(pData["i"]);
+
+            createPlayer(group, idx, x, y, speed);
+        }
+
+        changeUiToBattle();
+
+        MgrTimer.callLaterTime((int)(startTime - Tools.getCurTime()), startGame);
+		EventDispatcher.getGlobalInstance().dispatchEvent(EventId.MSG_GAME_START);
     }
 
 
     static void rspPlayerPos(Hashtable data)
     {
-        MgrTimer.callLaterTime(0, loadingGame, data);
+
     }
 
 
@@ -135,42 +164,6 @@ public class MgrBattle : EventBehaviour
         }
 
         m_players.Clear();
-    }
-
-
-    static void loadingGame(object obj)
-    {
-        Hashtable data = obj as Hashtable;
-        m_playerIndex = Convert.ToInt32(data["idx"]);
-        m_group = Convert.ToInt32(data["group"]);
-
-        long startTime = Convert.ToInt64(data["time"]);
-        ArrayList mapData = data["map"] as ArrayList;
-        ArrayList players = data["list"] as ArrayList;
-
-        clear();
-
-        m_map = new Map(mapData);
-        m_map.CreateMap();
-
-        Hashtable pData;
-        int group, idx;
-        float x, y, speed;
-        for (int i = 0; i < players.Count; i++)
-        {
-            pData = players[i] as Hashtable;
-            group = Convert.ToInt32(pData["g"]);
-            x = Convert.ToSingle(pData["x"]);
-            y = Convert.ToSingle(pData["y"]);
-            speed = Convert.ToSingle(pData["s"]);
-            idx = Convert.ToInt32(pData["i"]);
-
-            createPlayer(group, idx, x, y, speed);
-        }
-
-        changeUiToBattle();
-
-        MgrTimer.callLaterTime((int)(startTime - Tools.getCurTime()), startGame);
     }
 
 

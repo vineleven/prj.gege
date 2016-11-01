@@ -8,4 +8,7 @@ public interface ErrorCode {
 	
 	// 不在游戏中
     int NOT_IN_GAME = 2;
+    
+    // 非闲置状态
+    int NOT_IN_IDLE = 3;
 }

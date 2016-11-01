@@ -127,7 +127,6 @@ public class PanelRoom : PanelBase
         {
             MgrNet.reqStartGame();
             MgrPanel.openLoading();
-            EventDispatcher.getGlobalInstance().dispatchEvent(EventId.MSG_START_GAME);
         }
         else
         {

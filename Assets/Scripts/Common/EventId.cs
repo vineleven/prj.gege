@@ -4,9 +4,10 @@ using System.Collections;
 public enum EventId {
     MSG_ERROR_CODE,
     
-    MSG_START_GAME,
     MSG_DISCONNECTED,
     MSG_CONNECTED,
+
+    MSG_GAME_START,
 
     MSG_UPDATE_PLAYER_POS,
 

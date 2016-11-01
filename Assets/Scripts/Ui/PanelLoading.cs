@@ -44,11 +44,15 @@ public class PanelLoading : PanelBase
         return "PanelLoading";
     }
 
-
-    public override void onBuild(Hashtable param)
+    private PanelLoading()
     {
         addEventCallback(EventId.UI_CLOSE_LOADING, onClose);
         startProcMsg();
+    }
+
+
+    public override void onBuild(Hashtable param)
+    {
     }
 
 

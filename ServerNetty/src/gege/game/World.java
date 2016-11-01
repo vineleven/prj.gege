@@ -48,8 +48,8 @@ public class World {
 	public void createWorld(Room room){
 		m_group.clear();
 		
-		int col = 2;
-		int row = 2;
+		int col = 20;
+		int row = 20;
 		
 		// 地图
 		m_map = new Map(row, col);
