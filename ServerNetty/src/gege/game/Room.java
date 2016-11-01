@@ -2,6 +2,7 @@ package gege.game;
 
 import gege.common.GameSession;
 import gege.common.StateData;
+import gege.consts.Cmd;
 import gege.consts.GameState;
 import gege.util.Logger;
 
@@ -9,7 +10,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.function.Consumer;
 
-public class Room extends GameEntity {
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+public class Room {
 
 	private static int room_index = 0;
 
@@ -189,9 +193,23 @@ public class Room extends GameEntity {
 		m_visitors.forEach(action);
 	}
 
+	
 	public void notifyAllPlayer() {
+		JSONArray list = new JSONArray();
+		forEach(visitor->{
+			JSONObject obj = new JSONObject();
+			obj.put("name", visitor.getName());
+			obj.put("group", visitor.getGroup());
+			obj.put("host", visitor.isHost());
+			list.put(obj);
+		});
+		
+		JSONObject data = new JSONObject();
+		data.put("list", list);
+		data.put("idx", index);
+		
 		for (int i = 0; i < m_visitors.size(); i++) {
-			Game.getInstance().pushRoomInfo(m_visitors.get(i).getSession(), index);
+			m_visitors.get(i).getSession().send(Cmd.S2C_ROOM_INFO, data);
 		}
 	}
 
@@ -203,8 +221,11 @@ public class Room extends GameEntity {
 
 		m_visitors.clear();
 	}
+	
+	
+	
 
-	public class Visitor extends GameEntity {
+	public class Visitor {
 
 		private GameSession m_session = null;
 		private boolean m_bHost = false;
@@ -251,5 +272,6 @@ public class Room extends GameEntity {
 		public boolean equalsSession(Object obj) {
 			return m_session == obj;
 		}
+
 	}
 }

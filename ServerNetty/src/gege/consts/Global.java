@@ -1,6 +1,6 @@
 package gege.consts;
 
-import gege.util.Tools;
+import gege.util.Mathf;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
@@ -8,7 +8,7 @@ import io.netty.buffer.Unpooled;
 public interface Global {
 	
 	// 每次起动会产生一个随机数，用于某些验证或者加密
-	final public static int RANDOM_INT = Tools.getRandomInt( 123456, 654321 );
+	final public static int RANDOM_INT = Mathf.randomInt( 123456, 654321 );
 		
 	// server
 	int GAME_SERVER_PORT = 51234;

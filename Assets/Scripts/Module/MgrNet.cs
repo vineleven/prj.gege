@@ -16,7 +16,18 @@ public class MgrNet : EventBehaviour
         //registerCmd(Cmd.C2S_START_GAME, rspStartGame);
 
         registerCmd(Cmd.S2C_SHOW_MSG, rspShowMsg);
+        registerCmd(Cmd.S2C_ERROR_CODE, rspErrorCode);
     }
+
+
+    static long m_pingTimeCur = 0;
+    static long m_pingTimeMin = long.MaxValue;
+    // 相对服务器的时间延迟
+    static long m_clientTimeModify = 0;
+
+    public static string playerName = "playerName";
+
+
 
 
     static void rspShowMsg(Hashtable data)
@@ -35,7 +46,21 @@ public class MgrNet : EventBehaviour
     }
 
 
-    public static string playerName = "playerName";
+    static void rspErrorCode(Hashtable data)
+    {
+        int code = Convert.ToInt32(data["code"]);
+        switch (code)
+        {
+            case ErrorCode.NOT_IN_ROOM:
+            case ErrorCode.NOT_IN_GAME:
+                EventDispatcher.getGlobalInstance().dispatchUiEvent(EventId.MSG_ERROR_CODE, code);
+                break;
+            default:
+                Tools.LogError("unknown error code:" + code);
+                break;
+        }
+    }
+
 
     public static void reqSetName(string name)
     {
@@ -60,10 +85,6 @@ public class MgrNet : EventBehaviour
     }
 
 
-    static long m_pingTimeCur = 0;
-    static long m_pingTimeMin = long.MaxValue;
-    // 相对服务器的时间延迟
-    static long m_clientTimeModify = 0;
     static void rspTime(Hashtable data)
     {
         if (data.Contains("sTime"))
@@ -83,7 +104,7 @@ public class MgrNet : EventBehaviour
 
             EventDispatcher.getGlobalInstance().dispatchUiEvent(EventId.UI_UPDATE_PING, m_pingTimeCur);
 
-            //Tools.Log("Time ping:" + m_pingTimeCur + " min ping:" + m_pingTimeMin);
+            //Tools.Log("Time ping:" + m_pingTimeCur + " min ping:" + m_pingTimeMin + " modify:" + m_clientTimeModify);
             //Tools.Log("curTime:" + getServerTime());
             //Tools.Log("ServerTime:" + (clientEndTime - m_clientTimeModify));
         }
@@ -93,6 +114,12 @@ public class MgrNet : EventBehaviour
     public static long getServerTime()
     {
         return Tools.getCurTime() + m_clientTimeModify;
+    }
+
+
+    public static bool isServerTimeEnabled()
+    {
+        return m_clientTimeModify != 0;
     }
 
 
@@ -192,7 +219,7 @@ public class MgrNet : EventBehaviour
     /************************************************************/
     // Use this for initialization
     void Awake() {
-        addEventCallback(EventId.GLOBAL_RESPONSE, responseCallback);
+        addEventCallback(EventId.MSG_RESPONSE, responseCallback);
         addEventCallback(EventId.MSG_CONNECTED, onConnected);
         startProcMsg();
 

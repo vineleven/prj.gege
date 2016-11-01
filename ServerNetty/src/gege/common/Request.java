@@ -21,4 +21,7 @@ public class Request extends JSONObject {
 	public GameSession getSession(){
 		return m_session;
 	}
+
+
+
 }

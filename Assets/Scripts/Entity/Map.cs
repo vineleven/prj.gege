@@ -156,10 +156,11 @@ public class Map {
     // 向指定方向找最多两个点(世界坐标)
     public void findPath(Vector3 curPos, int dir1, int dir2, List<Vector3> list)
     {
+        int nextCount = dir2 == DIR_NONE ? 1 : 2;
         int i = pos2index(curPos.y);
         int j = pos2index(curPos.x);
 
-        for (int count = 0; count < 2; count++)
+        for (int count = 0; count < nextCount; count++)
         {
             MapPoint p = moveTo(i, j, dir1);
             if (p != null)

@@ -18,11 +18,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Random;
 
 public class Tools {
 	final private static DateFormat dateFormat = new SimpleDateFormat(Global.DATE_FORMAT_STRING);
-	final private static Random random = new Random( System.currentTimeMillis() );
+	
 	final private static int[] DEFAULT_INT_ARRAY = {};
 	final private static long[] DEFAULT_LONG_ARRAY = {};
 	
@@ -201,67 +200,6 @@ public class Tools {
 		return null;
 	}
 
-	
-	/**
-	 * 
-	 * @param start
-	 * @param end
-	 * @return [ start, end )
-	 */
-	public static int getRandomInt( int start, int end ){
-		return random.nextInt( end - start ) + start;
-	}
-	
-	
-	public final static int Math_NormPow (int x1, int y1){
-		return x1*x1 + y1*y1;
-	}
-	
-	
-	public static boolean Rect2PointXYWHIntersect (int Ax0, int Ay0, int Aw0, int Ah0, int Bx0, int By0, int Bw0, int Bh0)
-	{
-		int Ax1 = Ax0 + Aw0;
-		int Ay1 = Ay0 + Ah0;
-		int Bx1 = Bx0 + Bw0;
-		int By1 = By0 + Bh0;
-		
-		if(!(Ax0 <= Ax1))Logger.warn("Math_RectIntersect. Ax0 is bigger than Ax1");;
-		if(!(Ay0 <= Ay1))Logger.warn("Math_RectIntersect. Ay0 is bigger than Ay1");;
-		if(!(Bx0 <= Bx1))Logger.warn("Math_RectIntersect. Bx0 is bigger than Bx1");;
-		if(!(By0 <= By1))Logger.warn("Math_RectIntersect. By0 is bigger than By1");;
-
-		if (Ax1 < Bx0)	return false;
-		if (Ax0 > Bx1)	return false;
-		if (Ay1 < By0)	return false;
-		if (Ay0 > By1)	return false;
-		return true;
-	}
-	
-	
-	/**
-	 * 圆桌概率，计算所有的和，然后随机到其中一个(必然会随机到其中一个)
-	 * @param rates 概率列表
-	 * @return -1 失败
-	 */
-	public static int getRandomIndexByRound( int[] rates ){
-		int sum = 0;
-		for (int i = 0; i < rates.length; i++) {
-			sum += rates[i];
-		}
-		
-		if( sum <= 0 )
-			return -1;
-		
-		int rand = getRandomInt( 1, sum );
-		for (int i = 0; i < rates.length; i++) {
-			rand -= rates[i];
-			if( rand <= 0 )
-				return i;
-		}
-		
-		return -1;
-	}
-	
 	
 	public static int[] splitCfgWithInt( String str ){
 		if("".equals(str)) return DEFAULT_INT_ARRAY;

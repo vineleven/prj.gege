@@ -9,8 +9,8 @@ public class SceneMain : SceneBase {
 
         MgrPanel.openMain();
         MgrPanel.openDebugInfo();
-        MgrPanel.openInputName();
         MgrPanel.openJoyStick();
+        MgrPanel.openInputName();
 
 
         addEventCallback(EventId.MSG_START_GAME, onStartGame);

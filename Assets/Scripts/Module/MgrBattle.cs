@@ -42,6 +42,7 @@ public class MgrBattle : EventBehaviour
 	void Awake(){
         addEventCallback(EventId.MSG_CONNECTED, onConnected);
         addEventCallback(EventId.UI_UPDATE_JOYSTICK, onDragJoy);
+        addEventCallback(EventId.MSG_UPDATE_PLAYER_POS, onUpdatePlayerPos);
         startProcMsg();
 	}
 
@@ -76,6 +77,7 @@ public class MgrBattle : EventBehaviour
         PlayerDemo player = new PlayerDemo("Player1");
 
         player.transform.SetParent(m_map.getGround());
+        player.set2Main();
 
         m_follower.SetTarget(player.transform);
 
@@ -163,6 +165,7 @@ public class MgrBattle : EventBehaviour
 
         if (idx == m_playerIndex && group == m_group)
         {
+            player.set2Main();
             m_mainPlayer = player;
             m_follower.SetTarget(m_mainPlayer.transform);
         }
@@ -227,13 +230,30 @@ public class MgrBattle : EventBehaviour
 
     public static void onDragJoy(GameEvent e)
     {
-        Vector3 delta = (Vector3)e.getData();
+        Vector3 dir = (Vector3)e.getData();
         //Tools.Log("--- rad:" + delta.ToString());
         if (m_state == STATE_DEMO)
         {
-            m_playerDemo.setDir(delta);
-            m_playerDemo.findNextPath();
+            m_playerDemo.setDir(dir);
+            m_playerDemo.findNextPathFromUser();
         }
+        else if (m_state == STATE_GAME)
+        {
+            if (m_mainPlayer == null)
+                Tools.LogError("this is no main player");
+            else
+            {
+                m_mainPlayer.setDir(dir);
+                m_mainPlayer.findNextPath(true);
+            }
+        }
+    }
+
+
+    public static void onUpdatePlayerPos(GameEvent e)
+    {
+        Hashtable data = e.getData() as Hashtable;
+        MgrSocket.Send(Cmd.C2S_PLAYER_POS, data);
     }
 }
 

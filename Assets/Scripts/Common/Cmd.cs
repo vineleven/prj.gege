@@ -27,7 +27,23 @@ public class Cmd
     // 开始游戏
     public const int C2S_START_GAME = 7;
 
+    // 玩家位置更新
+    public const int C2S_PLAYER_POS = 8;
+
     // 消息提示
     public const int S2C_SHOW_MSG = 100;
 
+    // 返回错误码
+    public const int S2C_ERROR_CODE = 101;
 }
+
+
+public class ErrorCode
+{
+    // 不在房间
+    public const int NOT_IN_ROOM = 0;
+
+    // 不在游戏中
+    public const int NOT_IN_GAME = 1;
+}
+

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 public class Player : GameEntity
 {
+    bool m_bMainPlayer = false;
 
     float m_speed;
 
@@ -40,6 +41,12 @@ public class Player : GameEntity
     public int getIndex()
     {
         return m_index;
+    }
+
+
+    public void set2Main()
+    {
+        m_bMainPlayer = true;
     }
 
 
@@ -81,19 +88,27 @@ public class Player : GameEntity
     }
 
 
-    public void findNextPath()
+    /**
+     * 摇杆只找一个点
+     */
+    public void findNextPath(bool bJoystick)
     {
         m_path.Clear();
         Vector3 curPos = getPosition();
-        MgrBattle.getMap().findPath(curPos, m_dir1, m_dir2, m_path);
+
+        if (bJoystick)
+            MgrBattle.getMap().findPath(curPos, m_dir1, Map.DIR_NONE, m_path);
+        else
+            MgrBattle.getMap().findPath(curPos, m_dir1, m_dir2, m_path);
+
         if (m_path.Count > 0)
         {
             if (!m_nextPosInfo.getNextPos().Equals(m_path[0]))
             {
-                int nextDir = Map.getDir(curPos, m_path[0]);
+                int nextDir = Map.getDir(m_nextPosInfo.getNextPos(), m_path[0]);
                 if (m_nextPosInfo.isNegative(nextDir))
                 {
-                    // 如果下个目标点有变化切是反方向，则立即改变
+                    // 如果下个目标点有变化且是反方向，则立即改变
                     gotoNext(curPos);
                 }
             }
@@ -142,22 +157,24 @@ public class Player : GameEntity
     }
 
 
-    void gotoNext(Vector3 from)
+    public void gotoNext(Vector3 from)
     {
         if (m_path.Count > 0)
         {
             Vector3 nextPos = m_path[0];
 
             int time = (int)((nextPos - from).magnitude / m_speed);
-            m_nextPosInfo = new PosInfo(from, nextPos, time, MgrBattle.curTime + time);
-
+            m_nextPosInfo.reset(from, nextPos, time, MgrBattle.curTime + time);
             m_path.RemoveAt(0);
+
+            if (m_bMainPlayer)
+                EventDispatcher.getGlobalInstance().dispatchEvent(EventId.MSG_UPDATE_PLAYER_POS, m_nextPosInfo.ToData());
         }
     }
 
 
 
-    public class PosInfo
+    protected class PosInfo
     {
         Vector3 m_originPos;
         Vector3 m_nextPos;
@@ -166,6 +183,12 @@ public class Player : GameEntity
 
 
         public PosInfo(Vector3 originPos, Vector3 nextPos, int delta, long arriveTime)
+        {
+            reset(originPos, nextPos, delta, arriveTime);
+        }
+
+
+        public void reset(Vector3 originPos, Vector3 nextPos, int delta, long arriveTime)
         {
             m_originPos = originPos;
             m_nextPos = nextPos;
@@ -192,10 +215,10 @@ public class Player : GameEntity
         }
 
 
-        public void setNext(Vector3 destPos)
-        {
-            m_nextPos = destPos;
-        }
+        //public void setNext(Vector3 destPos)
+        //{
+        //    m_nextPos = destPos;
+        //}
 
 
         public bool isArrived(Vector3 descPos)
@@ -211,11 +234,20 @@ public class Player : GameEntity
         public Vector3 Lerp(long curTime)
         {
             float f = (m_arriveTime - curTime) / m_delta;
-            if (f <= 0)
-                f = 0f;
-            else if (f >= 1)
-                f = 1f;
             return Vector3.Lerp(m_originPos, m_nextPos, 1 - f);
+        }
+
+
+        public Hashtable ToData()
+        {
+            ArrayList p = new ArrayList();
+            p.Add(m_nextPos.x);
+            p.Add(m_nextPos.y);
+
+            Hashtable data = new Hashtable();
+            data["p"] = p;
+            data["t"] = m_arriveTime;
+            return data;
         }
     }
 }

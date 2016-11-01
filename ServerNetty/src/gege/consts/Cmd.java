@@ -25,11 +25,14 @@ public interface Cmd {
 	// 开始游戏
 	int C2S_START_GAME = 7;
 	
+	// 玩家位置更新
+    int C2S_PLAYER_POS = 8;
+    
 	
-	
-	
+	// 返回错误消息
 	int S2C_SHOW_MSG = 100;
 	
-//	int S2C_TIME = 100;
-//	int S2C_NEW_ROOM = 101;
+	// 返回错误码
+	int S2C_ERROR_CODE = 101;
+	
 }

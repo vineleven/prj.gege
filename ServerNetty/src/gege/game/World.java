@@ -5,7 +5,7 @@ import gege.common.StateData;
 import gege.consts.Cmd;
 import gege.consts.GameState;
 import gege.game.Room.Visitor;
-import gege.util.Tools;
+import gege.util.Mathf;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -21,7 +21,7 @@ import org.json.JSONObject;
  * @author vineleven
  *
  */
-public class World extends GameEntity {
+public class World {
 	
 	private static int m_index = 0;
 	final public int index;
@@ -67,7 +67,7 @@ public class World extends GameEntity {
 		int total = row * col;
 		for (int j = 0; j < 2; j++) {
 			for (int i = 0; i < sideCount;) {
-				rnd = Tools.getRandomInt(0, total);
+				rnd = Mathf.randomInt(0, total);
 				if(record.contains(rnd))
 					continue;
 				
@@ -81,9 +81,8 @@ public class World extends GameEntity {
 				}
 			}
 		}
-		
-		
-		// 通知所有玩家
+		// 通知所有玩家(先准备再开始，如果需要等待所有玩家加载完成了再开始游戏，则可以在这里通知)
+		// 目前采用start的时候统一通知，不用ack
 	}
 	
 	
@@ -107,15 +106,17 @@ public class World extends GameEntity {
 	
 	
 	private void onDisconnected(GameSession session){
+		// 停止玩家
 	}
 	
 	
 	private void foreach(Consumer<Player> action){
 		for (int i = 0; i < m_group.size(); i++) {
-			int size = m_group.get(i).size();
-			for (int j = 0; j < size; j++) {
-				action.accept(m_group.get(i).get(j));
-			}
+//			int size = m_group.get(i).size();
+//			for (int j = 0; j < size; j++) {
+//				action.accept(m_group.get(i).get(j));
+//			}
+			m_group.get(i).forEach(action);
 		}
 	}
 	
@@ -130,7 +131,7 @@ public class World extends GameEntity {
 		});
 		
 		data.put("list", players);
-		data.put("time", System.currentTimeMillis() + delay);
+		data.put("time", Game.getInstance().getCurTime() + delay);
 		
 		foreach(p -> {
 			data.put("idx", p.getIndex());
@@ -151,7 +152,10 @@ public class World extends GameEntity {
 	private void onStart(){
 		if(!m_bStart)
 			return;
-		
+	}
+	
+	
+	public void update() {
 		
 	}
 	
@@ -166,19 +170,21 @@ public class World extends GameEntity {
 		public int[][] tileData;
 		
 		Map(int row, int col){
-//			tileData = new int[row][col];
-//			for(int i=0; i<row; i++){
-//				for(int j=0; j<col; j++){
-//					int r = Tools.getRandomInt(0, 10);
-//					r = r > 7 ? TILE_PHY : TILE_NORMAL;
-//					tileData[i][j] = r;
-//				}
-//			}
+			tileData = new int[row][col];
 			
-			tileData = new int[][]{
-					{1,2},
-					{2,1}
-			};
+			// 随机一个地图
+			for(int i=0; i<row; i++){
+				for(int j=0; j<col; j++){
+					int r = Mathf.randomInt(0, 10);
+					r = r > 7 ? TILE_PHY : TILE_NORMAL;
+					tileData[i][j] = r;
+				}
+			}
+			
+//			tileData = new int[][]{
+//					{1,2},
+//					{2,1}
+//			};
 		}
 		
 		public JSONArray toJSONArray(){
@@ -194,4 +200,7 @@ public class World extends GameEntity {
 			return arr;
 		}
 	}
+
+
+	
 }

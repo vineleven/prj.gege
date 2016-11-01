@@ -9,6 +9,7 @@ import gege.common.Request;
 import gege.common.SyncQueue;
 import gege.common.TickThread;
 import gege.consts.Cmd;
+import gege.consts.ErrorCode;
 import gege.consts.EventId;
 import gege.consts.GameState;
 import gege.consts.Global;
@@ -16,7 +17,6 @@ import gege.game.Room.Visitor;
 import gege.util.Logger;
 import io.netty.util.CharsetUtil;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -113,6 +113,7 @@ public class Game extends TickThread {
 		m_reqListeners.put(Cmd.C2S_JOIN_ROOM, this::reqJoinRoom);
 		m_reqListeners.put(Cmd.C2S_LEVEL_ROOM, this::reqLeaveRoom);
 		m_reqListeners.put(Cmd.C2S_START_GAME, this::reqStartGame);
+		m_reqListeners.put(Cmd.C2S_PLAYER_POS, this::reqPlayerPos);
 	}
 	
 	
@@ -148,18 +149,18 @@ public class Game extends TickThread {
 	}
 	
 	/**
-	 * 获取即时时间(秒)，游戏逻辑不得使用当前方法
+	 * 获取即时时间(毫秒)，游戏逻辑不得使用当前方法
 	 */
-	public long getCurTime(){ return getLastTickTime() / 1000; }
+	public long getCurTime(){ return getLastTickTime(); }
 	
 	
 	public void callLaterTime(int delay, Callback callback){
-		m_callLaters.addLast(new LaterCall(delay + System.currentTimeMillis(), callback));
+		m_callLaters.addLast(new LaterCall(delay + getCurTime(), callback));
 	}
 	
 	
 	private void procLaterCall(){
-		long curTime = System.currentTimeMillis();
+		long curTime = getCurTime();
 		
 		for (Iterator<LaterCall> iterator = m_callLaters.iterator(); iterator.hasNext();) {
 			LaterCall laterCall = iterator.next();
@@ -195,10 +196,16 @@ public class Game extends TickThread {
 	}
 	
 	
+	public void pushErrorCode(GameSession session, int code){
+		JSONObject data = new JSONObject();
+		data.put("code", code);
+		session.send(Cmd.S2C_ERROR_CODE, data);
+	}
+	
+	
 	private void reqGetTime(Request req){
 		JSONObject data = req.data;
-		data.put("sTime", System.currentTimeMillis());
-		Logger.debug("" + data.getLong("sTime"));
+		data.put("sTime", getCurTime());
 		req.getSession().send(Cmd.C2S_TIME, data);
 	}
 	
@@ -265,8 +272,6 @@ public class Game extends TickThread {
 		
 		room.init(Room.STYLE_CUSTOM, count);
 		room.join(req.getSession());
-		
-//		rspRoomInfo(req.getSession(), room.index);
 	}
 	
 	
@@ -296,29 +301,6 @@ public class Game extends TickThread {
 			room.join(req.getSession());
 		else
 			room.join(req.getSession(), group);
-	}
-	
-	
-	public void pushRoomInfo(GameSession session, int idx){
-		if(idx >= m_rooms.size()){
-			Logger.error("rspRoomInfo can't find room index:" + idx);
-			return;
-		}
-		Room room = m_rooms.get(idx);
-		JSONArray list = new JSONArray();
-		room.forEach(visitor->{
-			JSONObject obj = new JSONObject();
-			obj.put("name", visitor.getName());
-			obj.put("group", visitor.getGroup());
-			obj.put("host", visitor.isHost());
-			list.put(obj);
-		});
-		
-		JSONObject data = new JSONObject();
-		data.put("list", list);
-		data.put("idx", idx);
-		
-		session.send(Cmd.S2C_ROOM_INFO, data);
 	}
 	
 	
@@ -359,7 +341,22 @@ public class Game extends TickThread {
 			world.createWorld(m_rooms.get(roomIdx));
 			m_worlds.add(world);
 			world.start();
+		} else {
+			pushErrorCode(req.getSession(), ErrorCode.NOT_IN_ROOM);
 		}
+	}
+	
+	
+	private void reqPlayerPos(Request req){
+		if(!req.getSession().inState(GameState.IN_GAME)){
+		}
+		
+		long arriveTime = req.data.getLong("t");
+		JSONArray pos = req.data.getJSONArray("p");
+		float x = (float) pos.getDouble(0);
+		float y = (float) pos.getDouble(1);
+		
+		Logger.debug("---->" + req.data.toString());
 	}
 	
 	

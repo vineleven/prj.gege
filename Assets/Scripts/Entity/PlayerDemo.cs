@@ -3,7 +3,7 @@ using System.Collections;
 
 public class PlayerDemo : Player
 {
-    const int CHANGE_DIR_DELTA_TIME = 6000;
+    const int CHANGE_DIR_DELTA_TIME = 3000;
     const float SPEED = 3f / 1000;
 
 
@@ -22,23 +22,24 @@ public class PlayerDemo : Player
 
     void randomDir()
     {
-        int dir1, dir2;
-        dir1 = Tools.Random(1, 5);
-        do
-        {
-            dir2 = Tools.Random(1, 5);
-        } while (dir1 == dir2 || Mathf.Abs(dir1 - dir2) == 2);
+        Vector3 dir = Vector3.zero;
+        dir.x = Tools.Random(-10, 11);
+        dir.y = Tools.Random(-10, 11);
+        setDir(dir);
 
-        setDir(dir1, dir2);
+        int count = 0;
+        while (count++ < 60 && m_path.Count < 1)
+        {
+            findNextPath(false);
+        }
     }
 
 
-    public void findNextPathAuto()
+    public void findNextPathFromUser()
     {
         m_setDirTime = MgrBattle.getCurTime() + 3000;
         m_changeDirNextTime = MgrBattle.getCurTime() + CHANGE_DIR_DELTA_TIME;
-
-        findNextPath();
+        findNextPath(true);
     }
 
 
@@ -54,7 +55,7 @@ public class PlayerDemo : Player
             int count = 0;
             while (count++ < 10 && m_path.Count < 1)
             {
-                findNextPath();
+                findNextPath(false);
             }
         }
 
@@ -64,4 +65,5 @@ public class PlayerDemo : Player
             randomDir();
         }
 	}
+
 }

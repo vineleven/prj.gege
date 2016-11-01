@@ -2,11 +2,14 @@
 using System.Collections;
 
 public enum EventId {
-    GLOBAL_RESPONSE,
+    MSG_RESPONSE,
+    MSG_ERROR_CODE,
     
     MSG_START_GAME,
     MSG_DISCONNECTED,
     MSG_CONNECTED,
+
+    MSG_UPDATE_PLAYER_POS,
 
     UI_UPDATE_PING,
     UI_UPDATE_DEBUG_INFO,
