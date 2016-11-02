@@ -59,6 +59,6 @@ public class PosInfo
     
     
     public float lerpY(float t){
-    	return Mathf.lerp(m_originX, m_nextX, t);
+    	return Mathf.lerp(m_originY, m_nextY, t);
     }
 }

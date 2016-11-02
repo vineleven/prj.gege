@@ -15,6 +15,7 @@ public class MgrBattle : EventBehaviour
     const int STATE_GAME = 2;
 
 
+    static int[] m_scores;
 
     static List<Player> m_players = new List<Player>();
 
@@ -40,7 +41,6 @@ public class MgrBattle : EventBehaviour
 
 
 	void Awake(){
-        addEventCallback(EventId.MSG_CONNECTED, onConnected);
         addEventCallback(EventId.UI_UPDATE_JOYSTICK, onDragJoy);
         addEventCallback(EventId.MSG_UPDATE_PLAYER_POS, onUpdatePlayerPos);
         startProcMsg();
@@ -53,6 +53,8 @@ public class MgrBattle : EventBehaviour
         MgrNet.registerCmd(Cmd.S2C_PLAYER_POS, rspPlayerPos);
         MgrNet.registerCmd(Cmd.S2C_COLLISION_RESULT, rspCollisionResult);
         MgrNet.registerCmd(Cmd.S2C_GAME_OVER, rspGameOver);
+        MgrNet.registerCmd(Cmd.C2S_LEAVE_GAME, rspPlayerLeave);
+        MgrNet.registerCmd(Cmd.S2C_RELIVE, rspPlayerRelive);
 
         m_follower = FollowTarget.Get(MgrScene.battleCamera.gameObject);
 	}
@@ -64,15 +66,11 @@ public class MgrBattle : EventBehaviour
     }
 
 
-    void onConnected(GameEvent e)
-    {
-        if (m_state == STATE_IDLE)
-            showDemoMap();
-    }
-
-
     public static void showDemoMap()
     {
+        if(m_state != STATE_IDLE)
+            return;
+
         clear();
 
         m_map = new Map();
@@ -84,11 +82,8 @@ public class MgrBattle : EventBehaviour
         //player.set2Main();
 
         m_follower.SetTarget(player.transform);
-
         m_players.Add(player);
-
         startGame(null);
-
         m_playerDemo = player;
 
 		setNextState(STATE_DEMO);
@@ -159,10 +154,15 @@ public class MgrBattle : EventBehaviour
         int lg = Convert.ToInt32(data["lg"]);
         int li = Convert.ToInt32(data["li"]);
 
+        m_scores[wg]++;
+        string msg = string.Format("<color=red>{0}</color> : <color=blue>{1}</color>", m_scores[0], m_scores[1]);
+        EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_UPDATE_SCROE, msg);
+
         foreach (var p in m_players)
         {
             if (p.getGroup() == wg && p.getIndex() == wi)
             {
+                // 继续潇洒走一回
             }
 
             if (p.getGroup() == lg && p.getIndex() == li)
@@ -175,7 +175,70 @@ public class MgrBattle : EventBehaviour
 
     static void rspGameOver(Hashtable data)
     {
+        string msg;
+        int group = Convert.ToInt32(data["g"]);
+        if (group == -1)
+        {
+            msg = "未能征服对手!";
+        }
+        else if (m_group == group)
+        {
+            msg = "你真棒!";
+        }
+        else
+        {
+            msg = "你真笨!";
+        }
+
+        EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_UPDATE_DEBUG_INFO, msg);
+
+        clear();
         EventDispatcher.getGlobalInstance().dispatchEvent(EventId.MSG_GAME_OVER);
+    }
+
+
+    static void reqLeaveGame()
+    {
+        if (m_state == STATE_GAME)
+        {
+            clear();
+            MgrSocket.Send(Cmd.C2S_LEAVE_GAME, null);
+            EventDispatcher.getGlobalInstance().dispatchEvent(EventId.MSG_GAME_OVER);
+        }
+    }
+
+
+    static void rspPlayerLeave(Hashtable data)
+    {
+        int group = Convert.ToInt32(data["g"]);
+        int idx = Convert.ToInt32(data["i"]);
+        foreach (var p in m_players)
+        {
+            if (group == p.getGroup() && idx == p.getIndex())
+            {
+                p.dispose();
+                m_players.Remove(p);
+                break;
+            }
+        }
+    }
+
+
+    static void rspPlayerRelive(Hashtable data)
+    {
+        int group = Convert.ToInt32(data["g"]);
+        int idx = Convert.ToInt32(data["i"]);
+        float x = Convert.ToSingle(data["x"]);
+        float y = Convert.ToSingle(data["y"]);
+
+        foreach (var p in m_players)
+        {
+            if (p.getGroup() == group && p.getIndex() == idx)
+            {
+                p.relive(x, y);
+                break;
+            }
+        }
     }
 
 
@@ -183,6 +246,8 @@ public class MgrBattle : EventBehaviour
     static void clear()
     {
 		setNextState(STATE_IDLE);
+
+        m_scores = new int[]{0, 0};
 
         if (m_map != null)
         {
@@ -253,6 +318,7 @@ public class MgrBattle : EventBehaviour
     static void startGame(object o)
     {
         curTime = getCurTime();
+        MgrPanel.openJoyStick();
     }
 
 

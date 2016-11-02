@@ -35,6 +35,7 @@ public class World {
 	
 	
 	
+	private int[] m_scores;
 	
 	private ArrayList<ArrayList<Player>> m_group = new ArrayList<ArrayList<Player>>(2);;
 	
@@ -61,11 +62,11 @@ public class World {
 	public void createWorld(Room room){
 		m_group.clear();
 		
-		int col = 20;
-		int row = 20;
+		int col = 15;
+		int row = 15;
 		
 		// 地图
-		m_map = new Map(row, col);
+		m_map = new Map(row, col, 2);
 		// 玩家
 		int sideCount = room.getSideCount();
 		for (int i = 0; i < 2; i++) {
@@ -94,6 +95,9 @@ public class World {
 				i++;
 			}
 		}
+		
+		m_scores = new int[2];
+		
 		// 通知所有玩家(先准备再开始，如果需要等待所有玩家加载完成了再开始游戏，则可以在这里通知)
 		// 目前采用start的时候统一通知，不用ack
 	}
@@ -121,9 +125,23 @@ public class World {
 	}
 	
 	
+	public void gm2GameOver(){
+		onGameOver();
+	}
+	
+	
 	private void onGameOver(){
+		JSONObject data = new JSONObject();
+		int result = -1;
+		if(m_scores[0] > m_scores[1]){
+			result = 0;
+		} else if(m_scores[0] < m_scores[1]){
+			result = 1;
+		}
+		
+		data.put("g", result);
 		foreach(player -> {
-			player.getSession().send(Cmd.S2C_GAME_OVER, null);
+			player.send(Cmd.S2C_GAME_OVER, data);
 		});
 		
 		closeWorld();
@@ -132,8 +150,10 @@ public class World {
 	
 	public void closeWorld(){
 		foreach(player -> {
-			player.getSession().setOnDisconnect(null);
-			player.getSession().setState(GameState.IDLE, null);
+			if(!player.isDisposed()){
+				player.getSession().setOnDisconnect(null);
+				player.getSession().setState(GameState.IDLE, null);
+			}
 		});
 		
 		m_map = null;
@@ -178,9 +198,11 @@ public class World {
 		data.put("time", Game.getInstance().getCurTime() + delay);
 		
 		foreach(p -> {
-			data.put("idx", p.getIndex());
-			data.put("group", p.getGroup());
-			p.getSession().send(Cmd.C2S_START_GAME, data);
+			if(!p.isDisposed()){
+				data.put("idx", p.getIndex());
+				data.put("group", p.getGroup());
+				p.getSession().send(Cmd.C2S_START_GAME, data);
+			}
 		});
 	}
 	
@@ -208,6 +230,8 @@ public class World {
 			return;
 		
 		foreach(this::updatePlayer);
+		
+		
 		
 		if(m_gameOverTime <= Game.getInstance().getCurTime())
 			onGameOver();
@@ -256,6 +280,8 @@ public class World {
 		Vector3 relivePos = m_map.getEmptyPos();
 		loser.dead(relivePos.x, relivePos.y);
 		
+		m_scores[winner.getGroup()] ++;
+		
 		JSONObject data = new JSONObject();
 		
 		data.put("wg", winner.getGroup());
@@ -264,7 +290,7 @@ public class World {
 		data.put("li", loser.getIndex());
 		
 		foreach(p -> {
-			p.getSession().send(Cmd.S2C_COLLISION_RESULT, data);
+			p.send(Cmd.S2C_COLLISION_RESULT, data);
 		});
 	}
 	
@@ -281,7 +307,7 @@ public class World {
 		private int m_row;
 		private int m_col;
 		
-		Map(int row, int col){
+		Map(int row, int col, int rate){
 			m_row = row;
 			m_col = col;
 			tileData = new int[row][col];
@@ -290,7 +316,7 @@ public class World {
 			for(int i=0; i<row; i++){
 				for(int j=0; j<col; j++){
 					int r = Mathf.randomInt(0, 10);
-					r = r > 7 ? TILE_PHY : TILE_NORMAL;
+					r = r < rate ? TILE_PHY : TILE_NORMAL;
 					tileData[i][j] = r;
 				}
 			}

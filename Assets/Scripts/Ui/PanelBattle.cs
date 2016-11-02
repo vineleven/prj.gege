@@ -6,15 +6,15 @@ using Global;
 
 
 
-public class PanelMain : PanelBase
+public class PanelBattle : PanelBase
 {
 
 
-    static PanelMain m_inst = null;
-    public static PanelMain getInstance()
+    static PanelBattle m_inst = null;
+    public static PanelBattle getInstance()
     {
         if (m_inst == null)
-            m_inst = new PanelMain();
+            m_inst = new PanelBattle();
 
         return m_inst;
     }
@@ -40,21 +40,39 @@ public class PanelMain : PanelBase
 
     public override string getResName()
     {
-        return "PanelMain";
+        return "PanelBattle";
     }
 
 
+    Text m_scoreText;
+
+
+
+    PanelBattle()
+    {
+        addEventCallback(EventId.UI_UPDATE_SCROE, onUpdateScore);
+        startProcMsg();
+    }
+    
+    
     public override void onBuild(Hashtable param)
     {
-        transform.FindChild("BtnJoin").GetComponent<Button>().onClick.AddListener(onClickJoin);
-        transform.FindChild("BtnCreate").GetComponent<Button>().onClick.AddListener(onClickCreate);
+        transform.FindChild("BtnBack").GetComponent<Button>().onClick.AddListener(onClickBack);
+        m_scoreText = transform.FindChild("Score").GetComponent<Text>();
     }
 
 
 
-    void onClickJoin()
+    void onClickBack()
     {
-        MgrPanel.openRoomCenter();
+        
+    }
+
+
+    void onUpdateScore(GameEvent e)
+    {
+        string text = e.getData() as string;
+        m_scoreText.text = text;
     }
 
 

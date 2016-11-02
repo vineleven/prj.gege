@@ -20,7 +20,7 @@ public interface Cmd {
 	int C2S_JOIN_ROOM = 5;
 	
 	// 离开房间
-	int C2S_LEVEL_ROOM = 6;
+	int C2S_LEAVE_ROOM = 6;
 	
 	// 开始游戏
 	int C2S_START_GAME = 7;
@@ -37,7 +37,16 @@ public interface Cmd {
     // 游戏结束
     int S2C_GAME_OVER = 11;
     
+    // 主动退出游戏
+    int C2S_LEAVE_GAME = 12;
+    
+    // 复活
+    int S2C_RELIVE = 13;
+    
 	
 	// 返回错误消息
 	int S2C_SHOW_MSG = 100;
+	
+	// GM命令
+    int C2S_GM = 200;
 }

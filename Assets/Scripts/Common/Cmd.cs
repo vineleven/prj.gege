@@ -22,7 +22,7 @@ public class Cmd
     public const int C2S_JOIN_ROOM = 5;
 
     // 退出房间
-    public const int C2S_LEVEL_ROOM = 6;
+    public const int C2S_LEAVE_ROOM = 6;
 
     // 开始游戏
     public const int C2S_START_GAME = 7;
@@ -39,8 +39,20 @@ public class Cmd
     // 游戏结束
     public const int S2C_GAME_OVER = 11;
 
+    // 主动退出游戏
+    public const int C2S_LEAVE_GAME = 12;
+
+    // 复活
+    public const int S2C_RELIVE = 13;
+
+
+
+
     // 消息提示
     public const int S2C_SHOW_MSG = 100;
+
+    // GM命令
+    public const int C2S_GM = 200;
 }
 
 

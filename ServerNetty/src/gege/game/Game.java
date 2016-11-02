@@ -77,7 +77,7 @@ public class Game extends TickThread {
 	private EventHandler m_global_eventHander = new EventHandler();
 	
 	// 游戏内消息
-	private EventHandler m_game_eventHander = new EventHandler();
+	private EventHandler m_game_eventHander = new EventHandler(m_dispatcher);
 	
 	// 所有房间
 	private ArrayList<Room> m_rooms = new ArrayList<>();
@@ -103,6 +103,7 @@ public class Game extends TickThread {
 		m_global_eventHander.addEventCallback(EventId.GLOBAL_REQUEST, this::onRequest);
 		
 		m_game_eventHander = new EventHandler(m_dispatcher);
+		m_game_eventHander.addEventCallback(EventId.PLAYER_RELIVE, this::onPlayerRelive);
 	}
 	
 	
@@ -112,9 +113,12 @@ public class Game extends TickThread {
 		m_reqListeners.put(Cmd.C2S_ROOM_CENTER, this::reqRoomCenter);
 		m_reqListeners.put(Cmd.C2S_NEW_ROOM, this::reqNewRoom);
 		m_reqListeners.put(Cmd.C2S_JOIN_ROOM, this::reqJoinRoom);
-		m_reqListeners.put(Cmd.C2S_LEVEL_ROOM, this::reqLeaveRoom);
+		m_reqListeners.put(Cmd.C2S_LEAVE_ROOM, this::reqLeaveRoom);
 		m_reqListeners.put(Cmd.C2S_START_GAME, this::reqStartGame);
 		m_reqListeners.put(Cmd.C2S_PLAYER_POS, this::reqPlayerPos);
+		m_reqListeners.put(Cmd.C2S_LEAVE_GAME, this::reqLeaveGame);
+		
+		m_reqListeners.put(Cmd.C2S_GM, this::reqGm);
 	}
 	
 	
@@ -202,6 +206,17 @@ public class Game extends TickThread {
 		data.put("msg", msg);
 		data.put("code", errorCode);
 		session.send(Cmd.S2C_SHOW_MSG, data);
+	}
+	
+	
+	private void reqGm(Request req){
+		String gmCode = req.data.getString("code");
+		if("GameOver".equals(gmCode)){
+			if(req.getSession().inState(GameState.IN_GAME)){
+				World world = m_worlds.get(req.getSession().getStateData().int1);
+				world.gm2GameOver();
+			}
+		}
 	}
 	
 	
@@ -323,6 +338,7 @@ public class Game extends TickThread {
 	}
 	
 	
+	// TODO: 暂时没有人数验证
 	private void reqStartGame(Request req){
 		if(req.getSession().inState(GameState.IN_ROOM)){
 			int roomIdx = req.getSession().getStateData().int1;
@@ -373,6 +389,8 @@ public class Game extends TickThread {
 		float x = (float) data.getDouble("x");
 		float y = (float) data.getDouble("y");
 		
+//		Logger.debug("--->req pos x:" + x + " y:" + y);
+		
 		// 直接这个加工这个数据广播，节省一点
 		data.put("g", player.getGroup());
 		data.put("i", player.getIndex());
@@ -380,13 +398,67 @@ public class Game extends TickThread {
 		if(player.tryMove(x, y, arriveTime, false)){
 			world.foreach(p -> {
 				if(!p.equalsPlayer(player)){
-					p.getSession().send(Cmd.S2C_PLAYER_POS, data);
+					p.send(Cmd.S2C_PLAYER_POS, data);
 				}
 			});
 		}
 		
 //		Logger.debug("---->" + req.data.toString());
 	}
+	
+	
+	private void reqLeaveGame(Request req){
+		if(req.getSession().inState(GameState.IN_GAME)){
+			StateData sData = req.getSession().getStateData();
+			World world = m_worlds.get(sData.int1);
+			world.getPlayer(sData.int2, sData.int3).dispose();
+			
+			req.getSession().setState(GameState.IDLE, null);
+			req.getSession().setOnDisconnect(null);
+			
+			JSONObject data = new JSONObject();
+			data.put("g", sData.int2);
+			data.put("i", sData.int3);
+			world.foreach(player -> {
+				player.send(Cmd.C2S_LEAVE_GAME, data);;
+			});
+		}
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	private void onPlayerRelive(GameEvent e){
+		Player player = (Player) e.getData();
+		GameSession session = player.getSession();
+		if(session == null || !session.inState(GameState.IN_GAME))
+			return;
+		
+		JSONObject data = new JSONObject();
+		data.put("g", player.getGroup());
+		data.put("i", player.getIndex());
+		data.put("x", player.x);
+		data.put("y", player.y);
+		
+		m_worlds.get(session.getStateData().int1).foreach(p->{
+			p.send(Cmd.S2C_RELIVE, data);
+		});
+	}
+	
+	
+	
+	
 	
 	
 	class LaterCall{

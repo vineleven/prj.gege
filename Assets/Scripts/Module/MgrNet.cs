@@ -168,7 +168,7 @@ public class MgrNet : EventBehaviour
 
     public static void reqLeaveRoom()
     {
-        MgrSocket.Send(Cmd.C2S_LEVEL_ROOM);
+        MgrSocket.Send(Cmd.C2S_LEAVE_ROOM);
     }
 
 

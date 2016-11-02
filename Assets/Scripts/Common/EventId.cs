@@ -19,6 +19,8 @@ public enum EventId {
     UI_UPDATE_ROOM_CENTER,
     UI_UPDATE_ROOM_INFO,
 
+    UI_UPDATE_SCROE,
+
     UI_UPDATE_JOYSTICK,
 
     UI_CLOSE_LOADING,

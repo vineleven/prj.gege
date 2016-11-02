@@ -56,12 +56,20 @@ public class PanelDebugInfo : PanelBase
     Text m_fps;
     public override void onBuild(Hashtable param)
     {
-        var com = gameObject.transform.FindChild("Button").GetComponent<Button>();
-        com.onClick.AddListener(OnClickButton);
+        transform.FindChild("Button").GetComponent<Button>().onClick.AddListener(OnClickButton);
+        if (Application.isMobilePlatform)
+        {
+            transform.FindChild("Button1").gameObject.SetActive(false);
+        }
+        else
+        {
+            transform.FindChild("Button1").GetComponent<Button>().onClick.AddListener(OnClickButton1);
+        }
+        
 
-        m_ping = gameObject.transform.FindChild("Ping").GetComponent<Text>();
-        m_debug = gameObject.transform.FindChild("Debug").GetComponent<Text>();
-        m_fps = gameObject.transform.FindChild("Fps").GetComponent<Text>();
+        m_ping = transform.FindChild("Ping").GetComponent<Text>();
+        m_debug = transform.FindChild("Debug").GetComponent<Text>();
+        m_fps = transform.FindChild("Fps").GetComponent<Text>();
     }
 
 
@@ -69,6 +77,13 @@ public class PanelDebugInfo : PanelBase
     {
         if(!MgrSocket.connected())
             EventDispatcher.getGlobalInstance().dispatchEvent(EventId.MSG_RETRY_CONNECT);
+    }
+
+    void OnClickButton1()
+    {
+        Hashtable data = new Hashtable();
+        data["code"] = "GameOver";
+        MgrSocket.Send(Cmd.C2S_GM, data);
     }
 
 

@@ -59,13 +59,15 @@ public abstract class GameEntity
 
     public void show()
     {
-        gameObject.SetActive(true);
+        if(!m_bDisposed)
+            gameObject.SetActive(true);
     }
 
 
     public void hide()
     {
-        gameObject.SetActive(false);
+        if(!m_bDisposed)
+            gameObject.SetActive(false);
     }
 
 

@@ -136,15 +136,14 @@ public class Player : GameEntity
 
     public override void onUpdate()
     {
-        if (!m_bDead)
+        if (!isDisposed() && !m_bDead)
             updatePos();
 	}
 
 
     void updatePos()
     {
-        Vector3 curPos = getPosition();
-        tryMoveWithCurPos(curPos);
+        tryMoveWithCurPos(getPosition());
     }
 
 
@@ -199,10 +198,14 @@ public class Player : GameEntity
     }
 
 
-    public void relive()
+    public void relive(float x, float y)
     {
         m_bDead = false;
         show();
+        m_path.Clear();
+        Vector3 nextPos = new Vector3(x, y, 0);
+        m_nextPosInfo.reset(nextPos, nextPos, 1, 0);
+        setPosition(nextPos);
     }
 
 

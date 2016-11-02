@@ -3,8 +3,8 @@ package gege.game;
 public abstract class GameEntity {
 	public float x;
 	public float y;
-	private float w = 1f;
-	private float h = 1f;
+	private float w = 0.6f;
+	private float h = 0.6f;
 	
 	// 用于碰撞
 	private float halfw = w / 2;

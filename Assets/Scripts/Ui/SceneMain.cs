@@ -21,7 +21,6 @@ public class SceneMain : SceneBase {
     {
         Tools.Log("Game Start");
         MgrPanel.disposeAllPanel(MgrPanel.LAYER_UI);
-		MgrPanel.openJoyStick();
     }
 
 
@@ -30,15 +29,15 @@ public class SceneMain : SceneBase {
         Tools.Log("Game Over");
         MgrPanel.disposeAllPanel(MgrPanel.LAYER_UI);
         MgrPanel.openMain();
-        MgrPanel.openJoyStick();
+        MgrBattle.showDemoMap();
     }
 
 
     void onConnected(GameEvent e)
     {
+        MgrBattle.showDemoMap();
         MgrPanel.disposeAllPanel(MgrPanel.LAYER_UI);
         MgrPanel.openMain();
-        MgrPanel.openJoyStick();
         MgrPanel.openInputName();
     }
 

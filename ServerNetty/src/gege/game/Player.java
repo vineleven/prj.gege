@@ -1,6 +1,7 @@
 package gege.game;
 
 import gege.common.GameSession;
+import gege.consts.EventId;
 import gege.util.Logger;
 
 import org.json.JSONObject;
@@ -56,6 +57,12 @@ public class Player extends GameEntity{
 	}
 	
 	
+	public void send(int cmd, JSONObject data){
+		if(m_session != null && !isDisposed())
+			m_session.send(cmd, data);
+	}
+	
+	
 	public int getIndex(){
 		return m_index;
 	}
@@ -79,6 +86,11 @@ public class Player extends GameEntity{
 	public void goGoGo(){
 		if(!inState(STATE_OFFLINE))
 			setNextState(STATE_NORMAL);
+	}
+	
+	
+	public void leave(){
+		setNextState(STATE_OFFLINE);
 	}
 	
 	
@@ -121,8 +133,12 @@ public class Player extends GameEntity{
 	
 	
 	private void updatePos(){
+//		if(m_group == 0)
+//			Logger.debug("--- debugPos x:" + x + " y:" + y + " nx:" + m_nextPos.m_nextX + " ny:" + m_nextPos.m_nextY + " delta:" + m_nextPos.m_delta);
+		
 		if(!m_nextPos.isArrived(x, y)){
 			float t = (Game.getInstance().getCurTime() - m_nextPos.m_arriveTime) / m_nextPos.m_delta;
+			t = 1 - t;
 			x = m_nextPos.lerpX(t);
 			y = m_nextPos.lerpY(t);
 		}
@@ -158,10 +174,10 @@ public class Player extends GameEntity{
 	
 	
 	private void onUpdateDead(){
-		if(m_reliveTime <= Game.getInstance().getCurTime())
-			setNextState(STATE_NONE);
+		if(m_reliveTime > Game.getInstance().getCurTime())
+			return;
 		
-		// 随机一个点复活
+		relive();
 	}
 	
 	
@@ -236,7 +252,14 @@ public class Player extends GameEntity{
 		// 3秒后复活
 		m_reliveTime = Game.getInstance().getCurTime() + 3000;
 		m_nextPos.reset(reliveX, reliveY, reliveX, reliveY, 1, 0);
+		setPosition(reliveX, reliveY);
 		setNextState(STATE_DEAD);
+	}
+	
+	
+	private void relive(){
+		Game.dispatchGameEvent(EventId.PLAYER_RELIVE, this);
+		setNextState(STATE_NORMAL);
 	}
 	
 	

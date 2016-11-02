@@ -8,6 +8,8 @@ package gege.consts;
 public enum EventId {
 	GLOBAL_REQUEST,
 	
+	PLAYER_RELIVE,
+	
 	EVENT_END;
 	
 	
