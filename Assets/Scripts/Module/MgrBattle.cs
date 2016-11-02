@@ -123,8 +123,7 @@ public class MgrBattle : EventBehaviour
             createPlayer(group, idx, x, y, speed);
         }
 
-        changeUiToBattle();
-
+        Tools.Log("delta time: " + (startTime - MgrNet.getServerTime()));
         MgrTimer.callLaterTime((int)(startTime - MgrNet.getServerTime()), startGame, "");
 		EventDispatcher.getGlobalInstance().dispatchEvent(EventId.MSG_GAME_START);
 		setNextState(STATE_GAME);
@@ -272,6 +271,7 @@ public class MgrBattle : EventBehaviour
             {
                 item.dispose();
                 m_items.Remove(item);
+                EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_UPDATE_GROUP, item.getType());
                 break;
             }
         }
@@ -326,13 +326,6 @@ public class MgrBattle : EventBehaviour
     }
 
 	
-    static void changeUiToBattle()
-    {
-        //MgrPanel.disposeAllPanel(MgrPanel.LAYER_UI);
-        //EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_CLOSE_LOADING);
-    }
-
-
     public static long getCurTime()
     {
         if (m_state == STATE_DEMO)
@@ -352,10 +345,12 @@ public class MgrBattle : EventBehaviour
 
     static void startGame(object o)
     {
-        EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_UPDATE_DEBUG_INFO, "");
         curTime = getCurTime();
-        if(o != null)
+        if (o != null)
+        {
             MgrPanel.openJoyStick();
+            EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_UPDATE_DEBUG_INFO, "");
+        }
     }
 
 

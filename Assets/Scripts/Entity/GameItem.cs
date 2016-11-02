@@ -20,6 +20,12 @@ public class GameItem : GameEntity {
     }
 
 
+    public int getType()
+    {
+        return m_type;
+    }
+
+
     public int getId()
     {
         return m_id;

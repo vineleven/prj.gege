@@ -51,15 +51,18 @@ public class PanelBattle : PanelBase
     PanelBattle()
     {
         addEventCallback(EventId.UI_UPDATE_SCROE, onUpdateScore);
+        addEventCallback(EventId.UI_UPDATE_GROUP, onUpdateGroup);
         startProcMsg();
     }
 
 
     bool m_back = false;
+    Image m_image;
     public override void onBuild(Hashtable param)
     {
         transform.FindChild("BtnBack").GetComponent<Button>().onClick.AddListener(onClickBack);
         m_scoreText = transform.FindChild("Score").GetComponent<Text>();
+        m_image = transform.FindChild("BG").GetComponent<Image>();
     }
 
 
@@ -81,25 +84,25 @@ public class PanelBattle : PanelBase
     }
 
 
-    void onClickCreate()
+    void onUpdateGroup(GameEvent e)
     {
-        List<string> list = new List<string>();
-        list.Add("1 Vs 1");
-        list.Add("2 Vs 2");
-        list.Add("3 Vs 3");
-        list.Add("4 Vs 4");
-        list.Add("5 Vs 5");
+        int group = (int)e.getData();
+        Color color;
+        if(group == 0)
+        {
+            color = new Color(1, 0, 0, 0.25f);
+        }
+        else if (group == 1)
+        {
+            color = new Color(0, 0, 1, 0.25f);
+        }
+        else
+        {
+            color = new Color(0, 0, 0, 0);
+        }
 
-        MgrPanel.openOption(list, onClickOption);
+        m_image.color = color;
     }
 
-
-    void onClickOption(object o)
-    {
-        int index = (int)o;
-        MgrPanel.openRoom(index);
-        MgrNet.reqNewRoom(index);
-        MgrPanel.openLoading();
-    }
 
 }
