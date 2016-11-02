@@ -12,13 +12,17 @@ using UnityEngine;
 
 class MgrSocket : EventBehaviour
 {
-	//端口及IP  
-    static IPEndPoint ipe = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 51234);
-    //static IPEndPoint ipe = new IPEndPoint(IPAddress.Parse("192.168.1.124"), 51234);
+
+    const int SERVER_PORT = 51234;
+
+	//端口及IP
+    static IPEndPoint ipe = new IPEndPoint(IPAddress.Parse("127.0.0.1"), SERVER_PORT);
+    //static IPEndPoint ipe = new IPEndPoint(IPAddress.Parse("192.168.1.124"), SERVER_PORT);
+    //static IPEndPoint ipe = new IPEndPoint(IPAddress.Parse("192.168.1.224"), SERVER_PORT);
 
 
     // 重新连接周期
-	int m_reconncetTime = 100;
+	int m_reconncetTime = -1;
 
     // 是否正在连接
 	bool m_connectting = false;
@@ -40,6 +44,8 @@ class MgrSocket : EventBehaviour
 
 	void Awake()
 	{
+        addEventCallback(EventId.MSG_RETRY_CONNECT, onTryConnect);
+        startProcMsg();
 	}
 
 
@@ -61,52 +67,85 @@ class MgrSocket : EventBehaviour
 
         m_socket = null;
         m_buffer.reset();
-        m_reconncetTime = 100;
     }
 
 
 	void Start(){
-        //StartCoroutine(getServerInfo());
-        StartCoroutine(Connect());
-	}
-
-
-    IEnumerator getServerInfo()
-    {
-        string url = "http://h005.ultralisk.cn:4022/u3d_patch/gege/server_info.json";
-        WWW www = new WWW(url);
-        yield return www;
-
-        if (string.IsNullOrEmpty(www.error))
+        if (Application.isMobilePlatform)
         {
-            string json = www.text;
-            try
-            {
-                Hashtable data = Json.DecodeMap(json);
-                string ip = data["ip"] as string;
-                int port = Convert.ToInt32(data["port"]);
-                setServerHost(ip, port);
-                StartCoroutine(Connect());
-            }
-            catch(Exception e)
-            {
-                Tools.LogError("getServerInfo:" + e.Message);
-            }
+            //StartCoroutine(getServerInfo());
+            //TryConnect();
+            MgrPanel.openInput("input server ip:", onGetServerIp);
         }
         else
         {
-            yield return new WaitForSeconds(2);
-            Tools.LogWarn("re try get server info.");
-            StartCoroutine(getServerInfo());
+            TryConnect();
         }
+	}
+
+
+    //IEnumerator getServerInfo()
+    //{
+    //    string url = "http://h005.ultralisk.cn:4022/u3d_patch/gege/server_info.json";
+    //    WWW www = new WWW(url);
+    //    yield return www;
+
+    //    if (string.IsNullOrEmpty(www.error))
+    //    {
+    //        string json = www.text;
+    //        try
+    //        {
+    //            Hashtable data = Json.DecodeMap(json);
+    //            string ip = data["ip"] as string;
+    //            int port = Convert.ToInt32(data["port"]);
+    //            setServerHost(ip, port);
+    //            TryConnect();
+    //        }
+    //        catch(Exception e)
+    //        {
+    //            Tools.LogError("getServerInfo:" + e.Message);
+    //        }
+    //    }
+    //    else
+    //    {
+    //        yield return new WaitForSeconds(2);
+    //        Tools.LogWarn("retry get server info.");
+    //        EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_UPDATE_DEBUG_INFO, "retry get server info.");
+    //        StartCoroutine(getServerInfo());
+    //    }
+    //}
+
+
+    void onGetServerIp(object obj)
+    {
+        string ip = obj as string;
+        setServerHost(ip, SERVER_PORT);
+        TryConnect();
     }
 
 
-	IEnumerator Connect()
+    void onTryConnect(GameEvent e)
+    {
+        TryConnect();
+    }
+
+
+    void TryConnect()
+    {
+        if(m_connectting)
+            return;
+
+        EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_UPDATE_DEBUG_INFO, "try connet to:" + ipe.ToString());
+
+        new Thread(Connect).Start();
+    }
+
+
+	void Connect()
 	{
 		Tools.Log ("begin connet.");
         if (m_connectting)
-            yield break;
+            return;
 
         if (connected())
         {
@@ -118,8 +157,6 @@ class MgrSocket : EventBehaviour
 			}
 		}
 
-		yield return null;
-
 		try
 		{
             m_connectting = true;
@@ -127,6 +164,7 @@ class MgrSocket : EventBehaviour
 			m_socket.Connect(ipe);
 
 			Tools.Log("Connect suc.");
+            EventDispatcher.getGlobalInstance().dispatchUiEvent(EventId.UI_UPDATE_DEBUG_INFO, "");
 			Receive(m_socket);
 
             EventDispatcher.getGlobalInstance().dispatchUiEvent(EventId.MSG_CONNECTED);
@@ -136,16 +174,30 @@ class MgrSocket : EventBehaviour
 			Tools.LogError ("Connect:"+e.Message);
 		}
 
+        m_reconncetTime = 150;
         m_connectting = false;
 	}
 
 
 	void Update(){
-        if (!m_connectting && m_socket!= null && !m_socket.Connected && --m_reconncetTime <= 0)
+        if (!m_connectting && m_socket!= null && !m_socket.Connected && --m_reconncetTime == 0)
         {
-            m_reconncetTime = 150;
             Tools.Log("Fail Connect");
-            //StartCoroutine(Connect());
+            EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_UPDATE_DEBUG_INFO, "Fail Connect.");
+
+            if (Application.isMobilePlatform)
+            {
+                MgrPanel.openInput("input server ip:", onGetServerIp);
+            }
+            else
+            {
+                MgrTimer.callLaterTime(2000, obj =>
+                {
+                    MgrPanel.openInput("input server ip:", onGetServerIp);
+                    //TryConnect();
+                });
+            }
+//            StartCoroutine(Connect());
 		}
 	}
 
@@ -173,7 +225,7 @@ class MgrSocket : EventBehaviour
                     string receive = m_buffer.toUTF8String();
                     m_buffer.reset();
                     
-                    Tools.Log("receive msg suc:" + receive);
+//                    Tools.Log("receive msg suc:" + receive);
 
                     var rsp = Json.DecodeMap(receive);
                     MgrNet.response(rsp);
@@ -195,7 +247,7 @@ class MgrSocket : EventBehaviour
     {
         try
         {
-            Tools.Log("Send:" + msg);
+//            Tools.Log("Send:" + msg);
             var data = Encoding.UTF8.GetBytes(msg);
             socket.BeginSend(data, 0, data.Length, SocketFlags.None, new AsyncCallback(SendCallback), socket);
         }

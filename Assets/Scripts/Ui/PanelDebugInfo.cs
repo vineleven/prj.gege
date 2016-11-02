@@ -19,6 +19,12 @@ public class PanelDebugInfo : PanelBase
     }
 
 
+    public override void clean()
+    {
+        m_inst = null;
+    }
+
+
     public override int getLayer()
     {
         return MgrPanel.LAYER_TOP;
@@ -37,6 +43,14 @@ public class PanelDebugInfo : PanelBase
     }
 
 
+    PanelDebugInfo()
+    {
+        addEventCallback(EventId.UI_UPDATE_PING, updatePing);
+        addEventCallback(EventId.UI_UPDATE_DEBUG_INFO, updateDebugInfo);
+        startProcMsg();
+    } 
+
+
     Text m_ping;
     Text m_debug;
     Text m_fps;
@@ -48,20 +62,13 @@ public class PanelDebugInfo : PanelBase
         m_ping = gameObject.transform.FindChild("Ping").GetComponent<Text>();
         m_debug = gameObject.transform.FindChild("Debug").GetComponent<Text>();
         m_fps = gameObject.transform.FindChild("Fps").GetComponent<Text>();
-
-        //m_eventHandler = new EventHandler();
-        //m_eventHandler.addEventCallback(Events.GLOBAL_RESPONSE, onResonse);
-        //m_eventHandler.startProcMsg();
-
-
-        addEventCallback(EventId.UI_UPDATE_PING, updatePing);
-        addEventCallback(EventId.UI_UPDATE_DEBUG_INFO, updateDebugInfo);
-        startProcMsg();
     }
 
 
     void OnClickButton()
     {
+        if(!MgrSocket.connected())
+            EventDispatcher.getGlobalInstance().dispatchEvent(EventId.MSG_RETRY_CONNECT);
     }
 
 
@@ -99,11 +106,5 @@ public class PanelDebugInfo : PanelBase
 
 
 
-
-    public override void close()
-    {
-        base.close();
-        m_inst = null;
-    }
 
 }

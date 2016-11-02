@@ -85,6 +85,17 @@ public class MgrPanel : EventBehaviour
     }
 
 
+    public static void openInput(string title, CallbackWithParam callback, string tip = "")
+    {
+        Hashtable param = new Hashtable();
+        param["title"] = title;
+        param["tip"] = tip;
+        param["callback"] = callback;
+
+        openPanel(new PanelInput(), param);
+    }
+
+
 
 
 
@@ -253,7 +264,7 @@ public class MgrPanel : EventBehaviour
     static void removeAndDispose(PanelBase panel)
     {
         removePanel(panel);
-        GameObject.Destroy(panel.gameObject);
+        panel.dispose();
     }
 
 
@@ -314,7 +325,7 @@ public class MgrPanel : EventBehaviour
         }
 
         pushStack(panel, layer);
-        panel.gameObject.transform.SetParent(getLayerNode(layer), false);
+        panel.setParent(getLayerNode(layer));
     }
 
 
@@ -346,7 +357,7 @@ public class MgrPanel : EventBehaviour
             var stack = m_view_stack[layer];
             foreach (var panel in stack)
             {
-                GameObject.Destroy(panel.gameObject);
+                panel.dispose();
             }
 
             stack.Clear();

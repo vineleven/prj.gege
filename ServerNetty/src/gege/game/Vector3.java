@@ -34,6 +34,14 @@ public class Vector3 {
 //    	
 //    }
 	
+	@Override
+	public boolean equals(Object obj) {
+		Vector3 v = (Vector3)obj;
+		if(v.x != x || v.y != y || v.z != z)
+			return false;
+		
+		return true;
+	}
 	
 	
 	

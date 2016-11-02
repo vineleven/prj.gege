@@ -4,8 +4,8 @@ using Global;
 
 public abstract class PanelBase : EventHandler {
 
-    public GameObject gameObject = null;
-    public RectTransform transform = null;
+    protected GameObject gameObject = null;
+    protected RectTransform transform = null;
 
     public abstract string getResName();
 
@@ -14,6 +14,8 @@ public abstract class PanelBase : EventHandler {
     public abstract int getLayer();
 
     public abstract int getStyle();
+
+    public abstract void clean();
 
 
     public PanelBase()
@@ -29,6 +31,12 @@ public abstract class PanelBase : EventHandler {
     }
 
 
+    public void setParent(Transform parent)
+    {
+        transform.SetParent(parent, false);
+    }
+
+
     public virtual void show()
     {
         gameObject.SetActive(true);
@@ -41,9 +49,18 @@ public abstract class PanelBase : EventHandler {
     }
 
 
-    public virtual void close()
+    public void close()
     {
-        stopProcMsg();
         MgrPanel.closePanel(this);
+        dispose();
     }
+
+
+    public void dispose()
+    {
+        GameObject.Destroy(gameObject);
+        stopProcMsg();
+        clean();
+    }
+
 }

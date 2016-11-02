@@ -12,7 +12,7 @@ public class MgrBattle : EventBehaviour
 
     const int STATE_IDLE = 0;
     const int STATE_DEMO = 1;
-    const int STATE_GAME = 0;
+    const int STATE_GAME = 2;
 
 
 
@@ -51,6 +51,8 @@ public class MgrBattle : EventBehaviour
 	void Start () {
         MgrNet.registerCmd(Cmd.C2S_START_GAME, rspStartGame);
         MgrNet.registerCmd(Cmd.S2C_PLAYER_POS, rspPlayerPos);
+        MgrNet.registerCmd(Cmd.S2C_COLLISION_RESULT, rspCollisionResult);
+        MgrNet.registerCmd(Cmd.S2C_GAME_OVER, rspGameOver);
 
         m_follower = FollowTarget.Get(MgrScene.battleCamera.gameObject);
 	}
@@ -89,7 +91,7 @@ public class MgrBattle : EventBehaviour
 
         m_playerDemo = player;
 
-        m_state = STATE_DEMO;
+		setNextState(STATE_DEMO);
     }
 
 
@@ -126,26 +128,61 @@ public class MgrBattle : EventBehaviour
 
         MgrTimer.callLaterTime((int)(startTime - Tools.getCurTime()), startGame);
 		EventDispatcher.getGlobalInstance().dispatchEvent(EventId.MSG_GAME_START);
+		setNextState(STATE_GAME);
     }
 
 
     static void rspPlayerPos(Hashtable data)
     {
-
+		long time = Convert.ToInt64(data["t"]);
+		float x = Convert.ToSingle(data["x"]);
+		float y = Convert.ToSingle(data["y"]);
+		int group = Convert.ToInt32(data["g"]);
+		int idx = Convert.ToInt32(data["i"]);
+		foreach(var p in m_players)
+		{
+			if(p.getGroup() == group && p.getIndex() == idx)
+			{
+				if(group == m_mainPlayer.getGroup() && idx == m_mainPlayer.getIndex())
+					Tools.LogError("---------- no no no!!!!!! group:" + group + " idx:" + idx);
+				
+				p.receiveNextPos(x, y, time);
+			}
+		}
     }
 
 
-    static void receivePlayerPos(GameEvent e)
+    static void rspCollisionResult(Hashtable data)
     {
-        Hashtable data = e.getData() as Hashtable;
+        int wg = Convert.ToInt32(data["wg"]);
+        int wi = Convert.ToInt32(data["wi"]);
+        int lg = Convert.ToInt32(data["lg"]);
+        int li = Convert.ToInt32(data["li"]);
 
+        foreach (var p in m_players)
+        {
+            if (p.getGroup() == wg && p.getIndex() == wi)
+            {
+            }
+
+            if (p.getGroup() == lg && p.getIndex() == li)
+            {
+                p.dead();
+            }
+        }
+    }
+
+
+    static void rspGameOver(Hashtable data)
+    {
+        EventDispatcher.getGlobalInstance().dispatchEvent(EventId.MSG_GAME_OVER);
     }
 
 
     // 清理战斗场景
     static void clear()
     {
-        m_state = STATE_IDLE;
+		setNextState(STATE_IDLE);
 
         if (m_map != null)
         {
@@ -167,6 +204,12 @@ public class MgrBattle : EventBehaviour
     }
 
 
+	static void setNextState(int state)
+	{
+		m_state = state;
+	}
+
+
     static void createPlayer(int group, int idx, float x, float y, float speed)
     {
         Player player = new Player("Player" + (group + 1), group, idx, x, y, speed);
@@ -176,6 +219,7 @@ public class MgrBattle : EventBehaviour
             player.set2Main();
             m_mainPlayer = player;
             m_follower.SetTarget(m_mainPlayer.transform);
+			EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_UPDATE_DEBUG_INFO, "g:" + group + " i:" + idx);
         }
 
         m_players.Add(player);
@@ -184,8 +228,8 @@ public class MgrBattle : EventBehaviour
 	
     static void changeUiToBattle()
     {
-        MgrPanel.disposeAllPanel(MgrPanel.LAYER_UI);
-        EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_CLOSE_LOADING);
+        //MgrPanel.disposeAllPanel(MgrPanel.LAYER_UI);
+        //EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_CLOSE_LOADING);
     }
 
 
@@ -208,7 +252,6 @@ public class MgrBattle : EventBehaviour
 
     static void startGame(object o)
     {
-        m_state = STATE_GAME;
         curTime = getCurTime();
     }
 

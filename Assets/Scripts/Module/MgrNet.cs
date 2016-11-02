@@ -37,7 +37,7 @@ public class MgrNet : EventBehaviour
         {
             case ErrorCode.NOT_IN_ROOM:
             case ErrorCode.NOT_IN_GAME:
-                EventDispatcher.getGlobalInstance().dispatchUiEvent(EventId.MSG_ERROR_CODE, code);
+                EventDispatcher.getGlobalInstance().dispatchEvent(EventId.MSG_ERROR_CODE, code);
                 break;
             default:
                 Tools.LogError("unknown error code:" + code);
@@ -76,7 +76,7 @@ public class MgrNet : EventBehaviour
             MgrSocket.Send(Cmd.C2S_TIME, data);
         }
 
-        MgrTimer.callLaterTime(5000, obj => syncServerTime());
+        MgrTimer.callLaterTime(10000, obj => syncServerTime());
     }
 
 
@@ -97,7 +97,7 @@ public class MgrNet : EventBehaviour
                 m_clientTimeModify = serverReceiveTime - clientArrivedTime;
             }
 
-            EventDispatcher.getGlobalInstance().dispatchUiEvent(EventId.UI_UPDATE_PING, m_pingTimeCur);
+            EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_UPDATE_PING, m_pingTimeCur);
 
             //Tools.Log("Time ping:" + m_pingTimeCur + " min ping:" + m_pingTimeMin + " modify:" + m_clientTimeModify);
             //Tools.Log("curTime:" + getServerTime());
@@ -132,7 +132,7 @@ public class MgrNet : EventBehaviour
 
         ArrayList list = data["list"] as ArrayList;
 
-        EventDispatcher.getGlobalInstance().dispatchUiEvent(EventId.UI_UPDATE_ROOM_CENTER, list);
+        EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_UPDATE_ROOM_CENTER, list);
     }
 
 
@@ -151,7 +151,7 @@ public class MgrNet : EventBehaviour
         if (data.ContainsKey("list"))
         {
             //ArrayList list = data["list"] as ArrayList;
-            EventDispatcher.getGlobalInstance().dispatchUiEvent(EventId.UI_UPDATE_ROOM_INFO, data);
+            EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_UPDATE_ROOM_INFO, data);
         }
     }
 

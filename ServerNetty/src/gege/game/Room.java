@@ -151,7 +151,7 @@ public class Room {
 	public void checkAll() {
 		int len = m_visitors.size() - 1;
 		for (int i = len; i >= 0; i--) {
-			if (!m_visitors.get(i).online()) {
+			if (!m_visitors.get(i).isOnline()) {
 				m_visitors.remove(i);
 			}
 		}
@@ -265,7 +265,7 @@ public class Room {
 			return m_group;
 		}
 
-		public boolean online() {
+		public boolean isOnline() {
 			return m_session.enabled();
 		}
 

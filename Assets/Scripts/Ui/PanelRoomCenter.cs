@@ -19,9 +19,9 @@ public class PanelRoomCenter : PanelBase {
         return m_inst;
     }
 
-    public override void close()
+
+    public override void clean()
     {
-        base.close();
         m_inst = null;
     }
 
@@ -50,20 +50,26 @@ public class PanelRoomCenter : PanelBase {
     ScrollRect m_grid;
 
     List<RoomItem> m_rooms = new List<RoomItem>();
-    public override void onBuild(Hashtable param)
+
+
+
+    PanelRoomCenter()
     {
-        gameObject.transform.FindChild("BtnClose").GetComponent<Button>().onClick.AddListener(close);
-        m_templateItem = gameObject.transform.FindChild("Scroll/RoomItem").gameObject;
-        m_templateItem.SetActive(false);
-        m_content = gameObject.transform.FindChild("Scroll/Viewport/Content").transform;
-        m_grid = m_content.GetComponent<ScrollRect>();
-
-        gameObject.transform.FindChild("Name").GetComponent<Text>().text = "Room Center";
-
         addEventCallback(EventId.UI_UPDATE_ROOM_CENTER, onUpdateRooms);
         startProcMsg();
-
         MgrNet.reqRoomCenter();
+    }
+
+
+    public override void onBuild(Hashtable param)
+    {
+        transform.FindChild("BtnClose").GetComponent<Button>().onClick.AddListener(close);
+        m_templateItem = transform.FindChild("Scroll/RoomItem").gameObject;
+        m_templateItem.SetActive(false);
+        m_content = transform.FindChild("Scroll/Viewport/Content").transform;
+        m_grid = m_content.GetComponent<ScrollRect>();
+
+        transform.FindChild("Name").GetComponent<Text>().text = "Room Center";
     }
 
 

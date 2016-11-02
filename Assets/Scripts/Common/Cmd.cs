@@ -33,6 +33,12 @@ public class Cmd
     // 广播位置
     public const int S2C_PLAYER_POS = 9;
 
+    // 广播碰撞结果
+    public const int S2C_COLLISION_RESULT = 10;
+
+    // 游戏结束
+    public const int S2C_GAME_OVER = 11;
+
     // 消息提示
     public const int S2C_SHOW_MSG = 100;
 }

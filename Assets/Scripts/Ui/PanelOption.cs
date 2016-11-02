@@ -34,10 +34,10 @@ public class PanelOption : PanelBase
     {
         for (int i = 1; i <= 5; i++)
         {
-            m_list.Add(new OptionItem(gameObject.transform.FindChild("BG/Btn" + i).gameObject, i));
+            m_list.Add(new OptionItem(transform.FindChild("BG/Btn" + i).gameObject, i));
         }
 
-        gameObject.transform.FindChild("BtnClose").GetComponent<Button>().onClick.AddListener(close);
+        transform.FindChild("BtnClose").GetComponent<Button>().onClick.AddListener(close);
 
         if (param == null)
             return;
@@ -62,6 +62,11 @@ public class PanelOption : PanelBase
     {
         m_callback(obj);
         close();
+    }
+
+
+    public override void clean()
+    {
     }
 
 

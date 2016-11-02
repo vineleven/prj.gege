@@ -2,16 +2,16 @@ package gege.game;
 
 import gege.common.GameSession;
 import gege.util.Logger;
-import gege.util.Mathf;
 
 import org.json.JSONObject;
 
 public class Player extends GameEntity{
 	
-//	final public static int STATE_READY = 0;
+	final public static int STATE_NONE = 0;
 	final public static int STATE_NORMAL = 1;
 	final public static int STATE_DEAD = 2;
 	final public static int STATE_INVINCIBLE = 3;
+	final public static int STATE_OFFLINE = 4;
 	
 	
 	private GameSession m_session;
@@ -29,23 +29,25 @@ public class Player extends GameEntity{
 	
 	// 验证标记
 	private boolean m_bVerify = false;
+	
+	// 复活时间
+	long m_reliveTime = 0;
 
-	
-	private int m_state = STATE_NORMAL;
-	
 	
 	public Player(GameSession session, int index) {
 		m_session = session;
 		m_index = index;
+		
+		m_session.setOnDisconnect(this::onDisconnected);
 	}
 	
 	
-	public void init(int group, int startCol, int startRow, float speed){
+	public void init(int group, float startX, float startY, float speed){
 		m_group = group;
-		m_nextPos = new PosInfo(startCol, startRow, startCol, startRow, 1, 0);
+		m_nextPos = new PosInfo(startX, startY, startX, startY, 1, 0);
 		m_speed = speed;
 		
-		setPosition(startCol, startRow);
+		setPosition(startX, startY);
 	}
 	
 	
@@ -74,7 +76,31 @@ public class Player extends GameEntity{
 	}
 	
 	
-
+	public void goGoGo(){
+		if(!inState(STATE_OFFLINE))
+			setNextState(STATE_NORMAL);
+	}
+	
+	
+	private void onDisconnected(GameSession session){
+		setNextState(STATE_OFFLINE);
+	}
+	
+	
+	public boolean isOnline(){
+		return m_session.enabled();
+	}
+	
+	
+	public boolean isNormal(){
+		return inState(STATE_NORMAL);
+	}
+	
+	
+	public boolean isDead(){
+		return inState(STATE_DEAD);
+	}
+	
 	
 	public JSONObject getStartInfo(){
 		JSONObject info = new JSONObject();
@@ -106,6 +132,8 @@ public class Player extends GameEntity{
 	@Override
 	public void onUpdate() {
 		switch (m_state) {
+		case STATE_NONE:
+			break;
 		case STATE_NORMAL:
 			onUpdateNormal();
 			break;
@@ -114,6 +142,8 @@ public class Player extends GameEntity{
 			break;
 		case STATE_INVINCIBLE:
 			onUpdateInvincible();
+			break;
+		case  STATE_OFFLINE:
 			break;
 		default:
 			Logger.error("can't find player state:" + m_state);
@@ -128,6 +158,10 @@ public class Player extends GameEntity{
 	
 	
 	private void onUpdateDead(){
+		if(m_reliveTime <= Game.getInstance().getCurTime())
+			setNextState(STATE_NONE);
+		
+		// 随机一个点复活
 	}
 	
 	
@@ -149,13 +183,12 @@ public class Player extends GameEntity{
 			return false;
 		}
 		
-		
-		float time = Mathf.distance(nextX, nextY, x, y) / m_speed;
-		long sArriveTime = (long) (Game.getInstance().getCurTime() + time);
 
+//		float time = Mathf.distance(nextX, nextY, x, y) / m_speed;
+//		long sArriveTime = (long) (Game.getInstance().getCurTime() + time);
 		// 标准时间误差
-		long delta = sArriveTime - arriveTime;
-		m_cumulativeErrorValue += delta;
+//		long delta = sArriveTime - arriveTime;
+//		m_cumulativeErrorValue += delta;
 		if(m_cumulativeErrorValue > 3000){
 			// 误差过大，请求校对
 		}
@@ -167,7 +200,12 @@ public class Player extends GameEntity{
 				// 继续验证
 			}
 		}
-
+		
+//		float curSpeed = Mathf.distance(nextX, nextY, x, y) / (arriveTime - m_nextPos.m_arriveTime);
+		// 3f/1000 的速度，40秒m_cumulativeErrorValue>15就算不正常了
+//		m_cumulativeErrorValue += (curSpeed - m_speed);
+//		Logger.debug("cur Speed:" + (curSpeed * 1000) + " cv:" + m_cumulativeErrorValue);
+		
 		
 //		long delta = Game.getInstance().getCurTime() - arriveTime;
 //		if(delta <= 200){
@@ -188,6 +226,20 @@ public class Player extends GameEntity{
 		
 		return true;
 	}
+	
+	
+	/**
+	 * @param reliveX
+	 * @param reliveY 复活坐标
+	 */
+	public void dead(float reliveX, float reliveY){
+		// 3秒后复活
+		m_reliveTime = Game.getInstance().getCurTime() + 3000;
+		m_nextPos.reset(reliveX, reliveY, reliveX, reliveY, 1, 0);
+		setNextState(STATE_DEAD);
+	}
+	
+	
 	
 	
 }

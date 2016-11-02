@@ -6,24 +6,40 @@ public class SceneMain : SceneBase {
 	public override void onEnter ()
 	{
         Tools.Log("enter SceneMain.");
-
-        MgrPanel.openMain();
+        
         MgrPanel.openDebugInfo();
-        MgrPanel.openJoyStick();
-        MgrPanel.openInputName();
 
-
+        addEventCallback(EventId.MSG_CONNECTED, onConnected);
         addEventCallback(EventId.MSG_GAME_START, onStartGame);
         addEventCallback(EventId.MSG_DISCONNECTED, onDisconnected);
+        addEventCallback(EventId.MSG_GAME_OVER, onGameOver);
         startProcMsg();
 	}
 
 
-    public void onStartGame(GameEvent e)
+    void onStartGame(GameEvent e)
     {
-        Tools.Log("start Game");
+        Tools.Log("Game Start");
         MgrPanel.disposeAllPanel(MgrPanel.LAYER_UI);
+		MgrPanel.openJoyStick();
+    }
+
+
+    void onGameOver(GameEvent e)
+    {
+        Tools.Log("Game Over");
+        MgrPanel.disposeAllPanel(MgrPanel.LAYER_UI);
+        MgrPanel.openMain();
         MgrPanel.openJoyStick();
+    }
+
+
+    void onConnected(GameEvent e)
+    {
+        MgrPanel.disposeAllPanel(MgrPanel.LAYER_UI);
+        MgrPanel.openMain();
+        MgrPanel.openJoyStick();
+        MgrPanel.openInputName();
     }
 
 

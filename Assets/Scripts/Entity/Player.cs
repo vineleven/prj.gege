@@ -6,6 +6,8 @@ public class Player : GameEntity
 {
     bool m_bMainPlayer = false;
 
+    bool m_bDead = false;
+
     float m_speed;
 
     int m_group;
@@ -116,15 +118,26 @@ public class Player : GameEntity
     }
 
 
-    public void notifyServerPath()
-    {
+	// 服务器来的数据
+	public void receiveNextPos(float x, float y, long arriveTime)
+	{
+		m_path.Clear();
+		Vector3 nextPos = new Vector3(x, y, 0);
+		int time = (int)(arriveTime - MgrBattle.curTime);
+		m_nextPosInfo.reset(getPosition(), nextPos, time, arriveTime);
+	}
 
+
+    public void dispatchPathInfo()
+    {
+		EventDispatcher.getGlobalInstance().dispatchEvent(EventId.MSG_UPDATE_PLAYER_POS, m_nextPosInfo.ToData());
     }
 
 
     public override void onUpdate()
     {
-        updatePos();
+        if (!m_bDead)
+            updatePos();
 	}
 
 
@@ -168,9 +181,43 @@ public class Player : GameEntity
             m_path.RemoveAt(0);
 
             if (m_bMainPlayer)
-                EventDispatcher.getGlobalInstance().dispatchEvent(EventId.MSG_UPDATE_PLAYER_POS, m_nextPosInfo.ToData());
+				dispatchPathInfo();
         }
     }
+
+
+    public void addScore()
+    {
+
+    }
+
+
+    public void dead()
+    {
+        m_bDead = true;
+        hide();
+    }
+
+
+    public void relive()
+    {
+        m_bDead = false;
+        show();
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

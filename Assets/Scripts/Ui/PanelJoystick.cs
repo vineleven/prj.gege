@@ -26,20 +26,19 @@ public class PanelJoystick : PanelBase {
     }
 
 
-    public static PanelJoystick inst;
+    public static PanelJoystick m_inst;
     public static PanelJoystick getInstance()
     {
-        if (inst == null)
-            inst = new PanelJoystick();
+        if (m_inst == null)
+            m_inst = new PanelJoystick();
 
-        return inst;
+        return m_inst;
     }
 
 
-    public override void close()
+    public override void clean()
     {
-        base.close();
-        inst = null;
+        m_inst = null;
     }
 
 
@@ -59,7 +58,7 @@ public class PanelJoystick : PanelBase {
 
     public override void onBuild(Hashtable param)
     {
-        m_joy_gameObjcet = gameObject.transform.FindChild("Circle").gameObject;
+        m_joy_gameObjcet = transform.FindChild("Circle").gameObject;
         m_joy_transform = m_joy_gameObjcet.transform as RectTransform;
 
 		originPos = m_joy_transform.localPosition;

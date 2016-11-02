@@ -20,6 +20,12 @@ public class PanelMain : PanelBase
     }
 
 
+    public override void clean()
+    {
+        m_inst = null;
+    }
+
+
     public override int getLayer()
     {
         return MgrPanel.LAYER_UI;
@@ -73,9 +79,4 @@ public class PanelMain : PanelBase
         MgrPanel.openLoading();
     }
 
-    public override void close()
-    {
-        base.close();
-        m_inst = null;
-    }
 }

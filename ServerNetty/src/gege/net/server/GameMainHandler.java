@@ -3,7 +3,6 @@ package gege.net.server;
 import gege.exception.ServerException;
 import gege.mgr.mgrSession;
 import gege.util.Logger;
-import gege.util.Tools;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -33,7 +32,7 @@ public class GameMainHandler extends ChannelHandlerAdapter {
 	@Override
 	public void channelRead( ChannelHandlerContext ctx, Object msg) throws Exception {
 		String requestMsg = ( String ) msg;
-		Logger.debug( Tools.getCurDate() + " request:" + requestMsg );
+//		Logger.debug( Tools.getCurDate() + " request:" + requestMsg );
 		
 		try {
 			mgrSession.dispatchRequest(ctx.channel(), requestMsg);

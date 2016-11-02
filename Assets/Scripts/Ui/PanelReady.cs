@@ -7,15 +7,15 @@ using Global;
 
 
 
-public class PanelLoading : PanelBase
+public class PanelReady : PanelBase
 {
 
 
-    static PanelLoading m_inst = null;
-    public static PanelLoading getInstance()
+    static PanelReady m_inst = null;
+    public static PanelReady getInstance()
     {
         if (m_inst == null)
-            m_inst = new PanelLoading();
+            m_inst = new PanelReady();
 
         return m_inst;
     }
@@ -41,13 +41,13 @@ public class PanelLoading : PanelBase
 
     public override string getResName()
     {
-        return "PanelLoading";
+        return "PanelReady";
     }
 
-    private PanelLoading()
+    private PanelReady()
     {
-        addEventCallback(EventId.UI_CLOSE_LOADING, onClose);
-        startProcMsg();
+        //addEventCallback(EventId.UI_CLOSE_LOADING, onClose);
+        //startProcMsg();
     }
 
 

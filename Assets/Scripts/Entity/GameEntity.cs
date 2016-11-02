@@ -57,6 +57,18 @@ public abstract class GameEntity
     }
 
 
+    public void show()
+    {
+        gameObject.SetActive(true);
+    }
+
+
+    public void hide()
+    {
+        gameObject.SetActive(false);
+    }
+
+
 
     public void update()
     {

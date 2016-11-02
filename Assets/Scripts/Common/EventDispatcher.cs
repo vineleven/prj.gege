@@ -97,28 +97,34 @@ public class EventDispatcher {
 
     private LinkedList<UiEvent> m_uiEvent = new LinkedList<UiEvent>();
     /**
-     * 放入下一帧处理
+     * 放入下一帧处理(放入主线)
      */
     public void dispatchUiEvent(EventId eid, object data = null)
     {
-        m_uiEvent.AddLast(new UiEvent(eid, data));
+        lock (m_uiEvent)
+        {
+            m_uiEvent.AddLast(new UiEvent(eid, data));
+        }
     }
 
 
     public void procUiEvent()
     {
-        var node = m_uiEvent.First;
-        LinkedListNode<UiEvent> next;
-        UiEvent e;
-        while (node != null)
+        lock (m_uiEvent)
         {
-            next = node.Next;
-            e = node.Value;
+            var node = m_uiEvent.First;
+            LinkedListNode<UiEvent> next;
+            UiEvent e;
+            while (node != null)
+            {
+                next = node.Next;
+                e = node.Value;
 
-            m_uiEvent.Remove(node);
-            node = next;
+                m_uiEvent.Remove(node);
+                node = next;
 
-            dispatchEvent(e.eid, e.data);
+                dispatchEvent(e.eid, e.data);
+            }
         }
     }
 

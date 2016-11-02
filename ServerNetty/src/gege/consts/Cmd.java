@@ -31,6 +31,12 @@ public interface Cmd {
     // 广播位置
     int S2C_PLAYER_POS = 9;
     
+    // 广播碰撞结果
+    int S2C_COLLISION_RESULT = 10;
+    
+    // 游戏结束
+    int S2C_GAME_OVER = 11;
+    
 	
 	// 返回错误消息
 	int S2C_SHOW_MSG = 100;

@@ -178,7 +178,10 @@ public class Game extends TickThread {
 	
 	
 	private void updateGameLogic(){
-		
+		int len = m_worlds.size();
+		for (int i = 0; i < len; i++) {
+			m_worlds.get(i).update();
+		}
 	}
 	
 
@@ -249,7 +252,7 @@ public class Game extends TickThread {
 	private void reqNewRoom(Request req){
 		if(!req.getSession().inState(GameState.IDLE)){
 			// 可能断线重连或者重启游戏
-			pushMsg(req.getSession(), "your are in game or in room.", ErrorCode.NOT_IN_IDLE);
+			pushMsg(req.getSession(), "you are in game or in room.", ErrorCode.NOT_IN_IDLE);
 			return;
 		}
 		
@@ -344,35 +347,39 @@ public class Game extends TickThread {
 			m_worlds.add(world);
 			world.start();
 		} else {
-			pushMsg(req.getSession(), "your are not in room.", ErrorCode.NOT_IN_ROOM);
+			pushMsg(req.getSession(), "you are not in room.", ErrorCode.NOT_IN_ROOM);
 		}
 	}
 	
 	
 	private void reqPlayerPos(Request req){
 		if(!req.getSession().inState(GameState.IN_GAME)){
-			pushMsg(req.getSession(), "your are not in game.", ErrorCode.NOT_IN_GAME);
+			pushMsg(req.getSession(), "you are not in game.", ErrorCode.NOT_IN_GAME);
 			return;
 		}
-		
-		JSONObject data = req.data;
-		
-		long arriveTime = data.getLong("t");
-		float x = (float) data.getDouble("x");
-		float y = (float) data.getDouble("y");
 		
 		StateData sData = req.getSession().getStateData();
 		
 		World world = m_worlds.get(sData.int1);
+		if(!world.isStart()){
+			pushMsg(req.getSession(), "game not start.", ErrorCode.NONE);
+			return;
+		}
 		
 		Player player = world.getPlayer(sData.int2, sData.int3);
+		
+		JSONObject data = req.data;
+		long arriveTime = data.getLong("t");
+		float x = (float) data.getDouble("x");
+		float y = (float) data.getDouble("y");
+		
+		// 直接这个加工这个数据广播，节省一点
+		data.put("g", player.getGroup());
+		data.put("i", player.getIndex());
 		
 		if(player.tryMove(x, y, arriveTime, false)){
 			world.foreach(p -> {
 				if(!p.equalsPlayer(player)){
-					// 直接这个数据广播，节省一点
-					data.put("g", p.getGroup());
-					data.put("i", p.getIndex());
 					p.getSession().send(Cmd.S2C_PLAYER_POS, data);
 				}
 			});

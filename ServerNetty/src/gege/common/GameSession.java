@@ -103,6 +103,10 @@ public class GameSession {
 			return;
 		}
 		
+		if(data == null){
+			data = new JSONObject();
+		}
+		
 		JSONObject sendData = new JSONObject();
 
 		sendData.put( Global.MSG_KEY_CMD, cmd );
@@ -110,7 +114,7 @@ public class GameSession {
 
 		String msg = sendData.toString().concat( Global.MSG_END_FLAG );
 		
-		Logger.debug( "send:" + msg );
+//		Logger.debug( "send:" + msg );
 		
 		m_chn.writeAndFlush(Unpooled.copiedBuffer(msg.getBytes()));
 	}

@@ -32,10 +32,10 @@ public class PanelDialog : PanelBase {
 
     public override void onBuild(Hashtable param)
     {
-        var btnYes = gameObject.transform.FindChild("BG/BtnYes");
+        var btnYes = transform.FindChild("BG/BtnYes");
         btnYes.GetComponent<Button>().onClick.AddListener(onClickYes);
 
-        var btnNo = gameObject.transform.FindChild("BG/BtnNo");
+        var btnNo = transform.FindChild("BG/BtnNo");
         btnNo.GetComponent<Button>().onClick.AddListener(onClickNo);
 
         if (param == null)
@@ -88,6 +88,11 @@ public class PanelDialog : PanelBase {
             m_onClickNo();
 
         close();
+    }
+
+
+    public override void clean()
+    {
     }
 
 

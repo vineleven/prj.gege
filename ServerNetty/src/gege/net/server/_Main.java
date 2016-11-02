@@ -14,8 +14,8 @@ public class _Main {
 		Game.create().start();
 		GameServer.create().boot();
 		
-		
 	}
+	
 	
 	
 	

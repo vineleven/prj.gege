@@ -20,11 +20,9 @@ public class PanelRoom : PanelBase
     }
 
 
-    public override void close()
+    public override void clean()
     {
-        base.close();
         m_inst = null;
-        MgrNet.reqLeaveRoom();
     }
 
 
@@ -59,20 +57,28 @@ public class PanelRoom : PanelBase
 
     GameObject m_btnStart;
 
+
+    PanelRoom()
+    {
+        addEventCallback(EventId.UI_UPDATE_ROOM_INFO, updateRoomPlayer);
+        startProcMsg();
+    }
+
+
     public override void onBuild(Hashtable param)
     {
         //EventDispatcher.getGlobalInstance().addListener(Events.UI_CLOSE_LOADING, onClose);
 
-        gameObject.transform.FindChild("BtnClose").GetComponent<Button>().onClick.AddListener(close);
-        m_btnStart = gameObject.transform.FindChild("BtnStart").gameObject;
+        transform.FindChild("BtnClose").GetComponent<Button>().onClick.AddListener(onClickClose);
+        m_btnStart = transform.FindChild("BtnStart").gameObject;
         m_btnStart.GetComponent<Button>().onClick.AddListener(onCLickStart);
 
-        m_name = gameObject.transform.FindChild("Name").GetComponent<Text>();
+        m_name = transform.FindChild("Name").GetComponent<Text>();
 
         var contents = new Transform[2];
         for (int i = 0; i < contents.Length; i++)
         {
-            contents[i] = gameObject.transform.FindChild("Viewport/Content" + (i + 1));
+            contents[i] = transform.FindChild("Viewport/Content" + (i + 1));
         }
 
         var objItem = new GameObject[contents.Length];
@@ -109,15 +115,18 @@ public class PanelRoom : PanelBase
             }
         }
 
-        addEventCallback(EventId.UI_UPDATE_ROOM_INFO, updateRoomPlayer);
-        startProcMsg();
-
         for (int i = 0; i < m_sideCount; i++)
         {
             foreach(var group in m_groups)
                 group[i].show().setPlayerInfo("loading..", false);
         }
+    }
 
+
+    void onClickClose()
+    {
+        close();
+        MgrNet.reqLeaveRoom();
     }
 
 
@@ -126,7 +135,7 @@ public class PanelRoom : PanelBase
         if (m_player_all_in)
         {
             MgrNet.reqStartGame();
-            MgrPanel.openLoading();
+            //MgrPanel.openLoading();
         }
         else
         {
@@ -186,7 +195,7 @@ public class PanelRoom : PanelBase
         else
             m_btnStart.SetActive(false);
 
-        EventDispatcher.getGlobalInstance().dispatchUiEvent(EventId.UI_CLOSE_LOADING);
+        EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_CLOSE_LOADING);
     }
 
 
