@@ -45,6 +45,12 @@ public class Cmd
     // 复活
     public const int S2C_RELIVE = 13;
 
+    // 刷道具
+    public const int S2C_NEW_ITEM = 14;
+
+    // 道具变化
+    public const int S2C_ITEM_CHANGE = 15;
+
 
 
 

@@ -46,6 +46,11 @@ public class MgrPanel : EventBehaviour
         openPanel(PanelMain.getInstance());
     }
 
+    public static void openBattle()
+    {
+        openPanel(PanelBattle.getInstance());
+    }
+
 
     public static void openJoyStick()
     {

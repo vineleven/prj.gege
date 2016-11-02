@@ -19,6 +19,8 @@ public class MgrBattle : EventBehaviour
 
     static List<Player> m_players = new List<Player>();
 
+    static List<GameItem> m_items = new List<GameItem>();
+
 	static Player m_mainPlayer;
     static PlayerDemo m_playerDemo;
 
@@ -55,6 +57,8 @@ public class MgrBattle : EventBehaviour
         MgrNet.registerCmd(Cmd.S2C_GAME_OVER, rspGameOver);
         MgrNet.registerCmd(Cmd.C2S_LEAVE_GAME, rspPlayerLeave);
         MgrNet.registerCmd(Cmd.S2C_RELIVE, rspPlayerRelive);
+        MgrNet.registerCmd(Cmd.S2C_NEW_ITEM, rspNewItem);
+        MgrNet.registerCmd(Cmd.S2C_ITEM_CHANGE, rspItemChange);
 
         m_follower = FollowTarget.Get(MgrScene.battleCamera.gameObject);
 	}
@@ -121,7 +125,7 @@ public class MgrBattle : EventBehaviour
 
         changeUiToBattle();
 
-        MgrTimer.callLaterTime((int)(startTime - Tools.getCurTime()), startGame);
+        MgrTimer.callLaterTime((int)(startTime - MgrNet.getServerTime()), startGame, "");
 		EventDispatcher.getGlobalInstance().dispatchEvent(EventId.MSG_GAME_START);
 		setNextState(STATE_GAME);
     }
@@ -134,6 +138,7 @@ public class MgrBattle : EventBehaviour
 		float y = Convert.ToSingle(data["y"]);
 		int group = Convert.ToInt32(data["g"]);
 		int idx = Convert.ToInt32(data["i"]);
+
 		foreach(var p in m_players)
 		{
 			if(p.getGroup() == group && p.getIndex() == idx)
@@ -153,6 +158,8 @@ public class MgrBattle : EventBehaviour
         int wi = Convert.ToInt32(data["wi"]);
         int lg = Convert.ToInt32(data["lg"]);
         int li = Convert.ToInt32(data["li"]);
+
+        Tools.Log("player dead group:" + lg + " idx:" + li);
 
         m_scores[wg]++;
         string msg = string.Format("<color=red>{0}</color> : <color=blue>{1}</color>", m_scores[0], m_scores[1]);
@@ -197,7 +204,7 @@ public class MgrBattle : EventBehaviour
     }
 
 
-    static void reqLeaveGame()
+    public static void reqLeaveGame()
     {
         if (m_state == STATE_GAME)
         {
@@ -236,6 +243,35 @@ public class MgrBattle : EventBehaviour
             if (p.getGroup() == group && p.getIndex() == idx)
             {
                 p.relive(x, y);
+                break;
+            }
+        }
+    }
+
+
+    static void rspNewItem(Hashtable data)
+    {
+        int type = Convert.ToInt32(data["t"]);
+        float x = Convert.ToSingle(data["x"]);
+        float y = Convert.ToSingle(data["y"]);
+        int id = Convert.ToInt32(data["id"]);
+
+        GameItem item = new GameItem("Item" + (type + 1), type, id, x, y);
+        m_items.Add(item);
+    }
+
+
+    public void rspItemChange(Hashtable data)
+    {
+        //int type = Convert.ToInt32(data["t"]);
+        int id = Convert.ToInt32(data["id"]);
+
+        foreach (var item in m_items)
+        {
+            if (item.getId() == id)
+            {
+                item.dispose();
+                m_items.Remove(item);
                 break;
             }
         }
@@ -284,7 +320,6 @@ public class MgrBattle : EventBehaviour
             player.set2Main();
             m_mainPlayer = player;
             m_follower.SetTarget(m_mainPlayer.transform);
-			EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_UPDATE_DEBUG_INFO, "g:" + group + " i:" + idx);
         }
 
         m_players.Add(player);
@@ -317,8 +352,10 @@ public class MgrBattle : EventBehaviour
 
     static void startGame(object o)
     {
+        EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_UPDATE_DEBUG_INFO, "");
         curTime = getCurTime();
-        MgrPanel.openJoyStick();
+        if(o != null)
+            MgrPanel.openJoyStick();
     }
 
 

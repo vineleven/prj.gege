@@ -115,6 +115,23 @@ public class PanelJoystick : PanelBase {
 
         m_joy_transform.localPosition = curPos;
 
+
+        // 强制4个方向
+        //switch (Map.getDir(Vector3.zero, curPos))
+        //{
+        //    case Map.DIR_UP:
+        //        break;
+        //    case Map.DIR_RIGHT:
+        //        break;
+        //    case Map.DIR_DOWN:
+        //        break;
+        //    case Map.DIR_LEFT:
+        //        break;
+        //    default:
+        //        break;
+        //}
+
+
         if(curLen > MIN_LEN)
             EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_UPDATE_JOYSTICK, curPos);
 	}

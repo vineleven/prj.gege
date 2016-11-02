@@ -9,6 +9,8 @@ import gege.util.Mathf;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.function.Consumer;
 
 import org.json.JSONArray;
@@ -34,17 +36,22 @@ public class World {
 	final private static int STATE_BLUE = 1;
 	
 	
+	private Map m_map;
 	
 	private int[] m_scores;
 	
 	private ArrayList<ArrayList<Player>> m_group = new ArrayList<ArrayList<Player>>(2);;
 	
-	private Map m_map;
+	private LinkedList<GameItem> m_items = new LinkedList<>();
+	
 	
 	private float m_speed = 3f / 1000;
 	
 	// 游戏结束时间
 	private long m_gameOverTime = 0;
+	
+	// 创建道具的时间
+	private long m_createItemTime = 0;
 	
 	
 	protected int m_state = STATE_NORMAL;
@@ -211,7 +218,7 @@ public class World {
 		int delay = 3000;
 		notifyStartInfo(delay);
 		Game.getInstance().callLaterTime(delay, this::onStart);
-		m_state = STATE_RED;
+		m_state = STATE_NORMAL;
 	}
 	
 	
@@ -230,8 +237,10 @@ public class World {
 			return;
 		
 		foreach(this::updatePlayer);
+		collisionAllPlayer();
 		
-		
+		updateItem();
+		collisionItems();
 		
 		if(m_gameOverTime <= Game.getInstance().getCurTime())
 			onGameOver();
@@ -240,7 +249,38 @@ public class World {
 	
 	private void updatePlayer(Player player){
 		player.update();
-		collisionAllPlayer();
+	}
+	
+	
+	private void updateItem(){
+		if(m_createItemTime > Game.getInstance().getCurTime())
+			return;
+		
+		// 5秒钟刷一次道具
+		Vector3 pos = m_map.getEmptyPos();
+		for (int j = 0; j < m_items.size(); j++) {
+			if(m_items.get(j).inPos(pos)){
+				return;
+			}
+		}
+		
+		// 随机一个物品
+		GameItem item = new GameItem(Mathf.randomInt(0, 2));
+		item.setPosition(pos.x, pos.y);
+		
+		m_items.add(item);
+		
+		JSONObject data = new JSONObject();
+		data.put("x", pos.x);
+		data.put("y", pos.y);
+		data.put("t", item.getType());
+		data.put("id", item.getId());
+		
+		foreach(player->{
+			player.send(Cmd.S2C_NEW_ITEM, data);
+		});
+		
+		m_createItemTime = Game.getInstance().getCurTime() + 5000;
 	}
 	
 	
@@ -286,12 +326,41 @@ public class World {
 		
 		data.put("wg", winner.getGroup());
 		data.put("wi", winner.getIndex());
-		data.put("lg", loser.getIndex());
+		data.put("lg", loser.getGroup());
 		data.put("li", loser.getIndex());
 		
 		foreach(p -> {
 			p.send(Cmd.S2C_COLLISION_RESULT, data);
 		});
+	}
+	
+	
+	private void collisionItems(){
+		int len = m_items.size();
+		
+		foreach(player -> {
+			for (Iterator<GameItem> iterator = m_items.iterator(); iterator.hasNext();) {
+				GameItem gameItem = iterator.next();
+				if(player.tryCollision(gameItem)){
+					notifyItemCollision(gameItem);
+					iterator.remove();
+				}
+			}
+		});
+	}
+	
+	
+	// 道具目前被谁吃了不重要，重要的是道具触发的全局效果
+	private void notifyItemCollision(GameItem item){
+		JSONObject data = new JSONObject();
+//		data.put("t", item.getType());
+		data.put("id", item.getId());
+		
+		foreach(p -> {
+			p.send(Cmd.S2C_ITEM_CHANGE, data);
+		});
+		
+		m_state = item.getType();
 	}
 	
 	

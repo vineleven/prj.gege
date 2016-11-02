@@ -53,8 +53,9 @@ public class PanelBattle : PanelBase
         addEventCallback(EventId.UI_UPDATE_SCROE, onUpdateScore);
         startProcMsg();
     }
-    
-    
+
+
+    bool m_back = false;
     public override void onBuild(Hashtable param)
     {
         transform.FindChild("BtnBack").GetComponent<Button>().onClick.AddListener(onClickBack);
@@ -65,7 +66,11 @@ public class PanelBattle : PanelBase
 
     void onClickBack()
     {
-        
+        if (!m_back)
+        {
+            m_back = true;
+            MgrBattle.reqLeaveGame();
+        }
     }
 
 

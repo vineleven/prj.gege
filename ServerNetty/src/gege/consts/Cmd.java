@@ -43,6 +43,14 @@ public interface Cmd {
     // 复活
     int S2C_RELIVE = 13;
     
+    // 刷道具
+    int S2C_NEW_ITEM = 14;
+    
+    // 道具变化
+    int S2C_ITEM_CHANGE = 15;
+    
+    
+    
 	
 	// 返回错误消息
 	int S2C_SHOW_MSG = 100;
