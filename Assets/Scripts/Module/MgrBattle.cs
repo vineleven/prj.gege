@@ -279,7 +279,7 @@ public class MgrBattle : EventBehaviour
 
 
     // 清理战斗场景
-    static void clear()
+    public static void clear()
     {
 		setNextState(STATE_IDLE);
 

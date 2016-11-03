@@ -45,7 +45,10 @@ public class SceneMain : SceneBase {
 
     public void onDisconnected(GameEvent e)
     {
-
+        MgrBattle.clear();
+        MgrBattle.showDemoMap();
+        MgrPanel.disposeAllPanel(MgrPanel.LAYER_UI);
+        MgrPanel.openMain();
     }
 
 

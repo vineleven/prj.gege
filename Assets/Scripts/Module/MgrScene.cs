@@ -55,5 +55,15 @@ public class MgrScene : EventBehaviour
 	// Update is called once per frame
 	void Update ()
     {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            MgrPanel.openDialog("Quit Game?", () =>
+            {
+                Application.Quit();
+            }, () =>
+            {
+                //
+            });
+        }
 	}
 }

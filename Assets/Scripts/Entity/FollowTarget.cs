@@ -48,7 +48,7 @@ public class FollowTarget : MonoBehaviour {
 		if (dis > 10) {
 			transform.position = destPos;
 		} else {
-            transform.position = Vector3.Lerp(myPos, destPos, Time.deltaTime * damping);
+            transform.position = Vector3.Lerp(myPos, destPos, 0.1f);
 		}
 	}
 }
