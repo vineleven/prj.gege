@@ -10,12 +10,19 @@ public class MgrScene : EventBehaviour
 	public static Camera uiCamera;
 	public static Camera battleCamera;
 
+    const int DESIGN_RESOLUTION_WIDTH = 1024;
+    const int DESIGN_RESOLUTION_HEIGHT = 576;
+
+    const float DESIGN_RESOLUTION_SCALE = (Screen.width / Screen.height) / (DESIGN_RESOLUTION_WIDTH / DESIGN_RESOLUTION_HEIGHT);
+
 
 	void Awake()
     {
 		uiCamera = GameObject.Find ("UIRoot/UiCamera").GetComponent<Camera>();
 		battleCamera = GameObject.Find("BattleCamera").GetComponent<Camera>();
 //		battleCamera.enabled = false;
+        float value = battleCamera.fieldOfView;
+        battleCamera.fieldOfView = 50 / DESIGN_RESOLUTION_SCALE;
 	}
 
 
