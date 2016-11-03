@@ -57,7 +57,6 @@ public class MgrScene : EventBehaviour
         m_curScene = scene;
         m_curScene.onEnter();
     }
-	
 
 	// Update is called once per frame
 	void Update ()

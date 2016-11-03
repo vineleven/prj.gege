@@ -23,7 +23,7 @@ public class Player extends GameEntity{
 	
 	private float m_speed = 3f / 1000;
 	
-	private PosInfo m_nextPos;
+	PosInfo m_nextPos;
 	
 	// 累计误差
 	private float m_cumulativeErrorValue = 0;
@@ -132,7 +132,7 @@ public class Player extends GameEntity{
 	}
 	
 	
-	private void updatePos(){
+	boolean updatePos(){
 //		if(m_group == 0)
 //			Logger.debug("--- debugPos x:" + x + " y:" + y + " nx:" + m_nextPos.m_nextX + " ny:" + m_nextPos.m_nextY + " delta:" + m_nextPos.m_delta);
 		
@@ -141,7 +141,10 @@ public class Player extends GameEntity{
 			t = 1 - t;
 			x = m_nextPos.lerpX(t);
 			y = m_nextPos.lerpY(t);
+			return true;
 		}
+		
+		return false;
 	}
 	
 	

@@ -4,7 +4,6 @@ import gege.common.StateData;
 import gege.consts.Cmd;
 import gege.consts.GameState;
 import gege.game.Room.Visitor;
-import gege.util.Logger;
 import gege.util.Mathf;
 
 import java.util.ArrayList;
@@ -31,12 +30,12 @@ public class World {
 	
 	final private static int STATE_NORMAL = -1;
 	// 红方
-	final private static int STATE_RED = 0;
+//	final private static int STATE_RED = 0;
 	// 蓝方
-	final private static int STATE_BLUE = 1;
+//	final private static int STATE_BLUE = 1;
 	
 	
-	private Map m_map;
+	private GameMap m_map;
 	
 	private int[] m_scores;
 	
@@ -73,7 +72,7 @@ public class World {
 		int row = 15;
 		
 		// 地图
-		m_map = new Map(row, col, 2);
+		m_map = new GameMap(row, col, 2);
 		// 玩家
 		int sideCount = room.getSideCount();
 		for (int i = 0; i < 2; i++) {
@@ -336,8 +335,6 @@ public class World {
 	
 	
 	private void collisionItems(){
-		int len = m_items.size();
-		
 		foreach(player -> {
 			for (Iterator<GameItem> iterator = m_items.iterator(); iterator.hasNext();) {
 				GameItem gameItem = iterator.next();
@@ -363,89 +360,5 @@ public class World {
 		m_state = item.getType();
 	}
 	
-	
-	
-	
-	
-	
-	
-	class Map {
-		final public static int TILE_NORMAL = 1;
-		final public static int TILE_PHY = 2;
-		public int[][] tileData;
-		private int m_row;
-		private int m_col;
-		
-		Map(int row, int col, int rate){
-			m_row = row;
-			m_col = col;
-			tileData = new int[row][col];
-			
-			// 随机一个地图
-			for(int i=0; i<row; i++){
-				for(int j=0; j<col; j++){
-					int r = Mathf.randomInt(0, 10);
-					r = r < rate ? TILE_PHY : TILE_NORMAL;
-					tileData[i][j] = r;
-				}
-			}
-			
-//			tileData = new int[][]{
-//					{1,2},
-//					{2,1}
-//			};
-		}
-		
-		
-		public Vector3 getEmptyPos(){
-			int rnd = getEmptyPosByInt();
-			if(rnd != -1)
-				return getVector3ByInt(rnd);
-			
-			return null;
-		}
-		
-		
-		public int getEmptyPosByInt(){
-			int rnd, x, y;
-			int total = m_row * m_col;
-			//1000 次保护
-			for (int i = 0; i < 1000 ;) {
-				rnd = Mathf.randomInt(0, total);
-				
-				y = rnd % m_row;
-				x = rnd / m_row;
-				
-				if(tileData[y][x] != TILE_PHY){
-					return rnd;
-				}
-				i++;
-			}
-			
-			Logger.error("can't find rnd pos by int");
-			return -1;
-		}
-		
-		
-		public Vector3 getVector3ByInt(int i){
-			return new Vector3(i / m_row, i % m_row);
-		}
-		
-		
-		public JSONArray toJSONArray(){
-			JSONArray arr = new JSONArray();
-			for (int i = 0; i < tileData.length; i++) {
-				JSONArray arr1 = new JSONArray();
-				for (int j = 0; j < tileData[i].length; j++) {
-					arr1.put(tileData[i][j]);
-				}
-				arr.put(arr1);
-			}
-			
-			return arr;
-		}
-	}
-
-
 	
 }

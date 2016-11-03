@@ -331,6 +331,7 @@ public class MgrPanel : EventBehaviour
 
         pushStack(panel, layer);
         panel.setParent(getLayerNode(layer));
+        panel.show();
     }
 
 

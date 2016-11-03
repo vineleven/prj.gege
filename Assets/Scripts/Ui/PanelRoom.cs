@@ -248,7 +248,7 @@ public class PanelRoom : PanelBase
 
         public void clear()
         {
-            m_text.text = "Join";
+            m_text.text = "Empty";
             empty = true;
             m_sign.SetActive(false);
         }

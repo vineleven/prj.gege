@@ -75,7 +75,7 @@ public class PanelDebugInfo : PanelBase
 
     void OnClickButton()
     {
-        if(!MgrSocket.connected())
+        if (!MgrSocket.connected())
             EventDispatcher.getGlobalInstance().dispatchEvent(EventId.MSG_RETRY_CONNECT);
     }
 
