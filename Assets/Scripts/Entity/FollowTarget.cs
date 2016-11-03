@@ -10,7 +10,7 @@ public class FollowTarget : MonoBehaviour {
     public float distance = -7f;
     
     private float _xRotation = -30;
-    public float xRotation = -30;
+    public float xRotation = 0;
 
 	public float time = 0.1f;
 
@@ -43,8 +43,8 @@ public class FollowTarget : MonoBehaviour {
 
         if (_xRotation != xRotation)
         {
+            xRotation = _xRotation;
             transform.rotation = Quaternion.Euler(xRotation, 0, 0);
-            _xRotation = xRotation;
         }
 
 		Vector3 myPos = transform.position;

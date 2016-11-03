@@ -10,10 +10,10 @@ public class MgrScene : EventBehaviour
 	public static Camera uiCamera;
 	public static Camera battleCamera;
 
-    const int DESIGN_RESOLUTION_WIDTH = 1024;
-    const int DESIGN_RESOLUTION_HEIGHT = 576;
+    const float DESIGN_RESOLUTION_WIDTH = 1024;
+    const float DESIGN_RESOLUTION_HEIGHT = 576;
 
-    static float DESIGN_RESOLUTION_SCALE = (Screen.width / Screen.height) / (DESIGN_RESOLUTION_WIDTH / DESIGN_RESOLUTION_HEIGHT);
+    static float DESIGN_RESOLUTION_SCALE = ((float)Screen.width / Screen.height) / (DESIGN_RESOLUTION_WIDTH / DESIGN_RESOLUTION_HEIGHT);
 
 
 	void Awake()
