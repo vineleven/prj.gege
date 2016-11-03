@@ -6,10 +6,13 @@ public class FollowTarget : MonoBehaviour {
 
 
 	Transform target;
-	float height = -5.7f;
-	float distance = -4.2f;
-	float xRotation = -60;
-	public float damping = 3;
+    public float height = -4f;
+    public float distance = -7f;
+    
+    private float _xRotation = -30;
+    public float xRotation = -30;
+
+	public float time = 0.1f;
 
 
 	public static FollowTarget Get(GameObject go)
@@ -30,14 +33,19 @@ public class FollowTarget : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		transform.rotation = Quaternion.Euler (xRotation, 0, 0);
 	}
 
 
 	// Update is called once per frame
 	void Update () {
 		if (target == null)
-			return;
+            return;
+
+        if (_xRotation != xRotation)
+        {
+            transform.rotation = Quaternion.Euler(xRotation, 0, 0);
+            _xRotation = xRotation;
+        }
 
 		Vector3 myPos = transform.position;
 		Vector3 targetPos = target.position;
@@ -48,7 +56,7 @@ public class FollowTarget : MonoBehaviour {
 		if (dis > 10) {
 			transform.position = destPos;
 		} else {
-            transform.position = Vector3.Lerp(myPos, destPos, 0.1f);
+            transform.position = Vector3.Lerp(myPos, destPos, time);
 		}
 	}
 }
