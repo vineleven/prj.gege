@@ -12,8 +12,8 @@ public class Map {
     public const int DIR_LEFT = 4;
     
 
-    public const int TILE_NORMAL = 1;
-	public const int TILE_PHY = 2;
+    public const int TILE_NORMAL = 0;
+	public const int TILE_PHY = 1;
 
 
 	int[][] m_tileData;
@@ -51,7 +51,7 @@ public class Map {
             for (int j = 0; j < col; j++)
             {
                 int r = Tools.Random(1, 10);
-                r = r > 6 ? 2 : 1;
+                r = r > 6 ? TILE_PHY : TILE_NORMAL;
                 cols[j] = r;
             }
             m_tileData[i] = cols;
@@ -74,7 +74,7 @@ public class Map {
             for (int j = 0; j < cols.Length; j++)
             {
                 //GameObject go = Resources.Load<GameObject> ("Prefab/Tile" + cols[j]);
-                GameObject go = MgrRes.newObject("Tile" + cols[j]) as GameObject;
+                GameObject go = MgrRes.newObject("Tile" + (cols[j] + 1)) as GameObject;
                 go.name = "i:" + i + " j:" + j;
                 go.transform.SetParent(m_ground.transform);
 				go.transform.position = new Vector3 (j, i, 0);

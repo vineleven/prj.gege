@@ -68,11 +68,13 @@ public class World {
 	public void createWorld(Room room){
 		m_group.clear();
 		
-		int col = 15;
-		int row = 15;
 		
 		// 地图
-		m_map = new GameMap(row, col, 2);
+//		int col = 15;
+//		int row = 15;
+//		m_map = new GameMap(row, col, 2);
+		// 测试地图
+		m_map = new GameMap();
 		// 玩家
 		int sideCount = room.getSideCount();
 		for (int i = 0; i < 2; i++) {

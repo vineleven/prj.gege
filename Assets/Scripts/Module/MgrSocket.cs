@@ -32,7 +32,7 @@ class MgrSocket : EventBehaviour
 
 
     static Socket m_socket = null;
-    static ByteBuffer m_buffer = new ByteBuffer(1024);
+    static ByteBuffer m_buffer = new ByteBuffer(2048);
 	static byte[] m_transfer_buffer = new byte[128];
 
 
@@ -237,7 +237,6 @@ class MgrSocket : EventBehaviour
 			Receive(socket);
 		} catch(Exception e){
             Tools.LogError("ReceiveCallback:" + e.Message);
-            Tools.LogError("cur msg:" + m_buffer.ToString());
             Tools.LogError(e.StackTrace);
 		}
 	}
