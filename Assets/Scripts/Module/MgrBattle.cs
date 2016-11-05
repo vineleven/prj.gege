@@ -302,6 +302,12 @@ public class MgrBattle : EventBehaviour
         }
 
         m_players.Clear();
+
+        foreach (var item in m_items)
+        {
+            item.dispose();
+        }
+        m_items.Clear();
     }
 
 

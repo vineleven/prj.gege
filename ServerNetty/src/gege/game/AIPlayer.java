@@ -35,9 +35,9 @@ public class AIPlayer extends Player {
 	
 	
 	// 模拟GameSession
-	class AISession extends GameSession {
-		public AISession(Channel chn) {
-			super(chn);
+	public static class AISession extends GameSession {
+		public AISession() {
+			super(null);
 		}
 		
 		

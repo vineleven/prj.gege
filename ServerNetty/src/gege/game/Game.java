@@ -290,7 +290,7 @@ public class Game extends TickThread {
 			m_rooms.add(room);
 		}
 		
-		room.init(Room.STYLE_CUSTOM, count);
+		room.init(count);
 		room.join(req.getSession());
 	}
 	
@@ -347,6 +347,8 @@ public class Game extends TickThread {
 				pushMsg(req.getSession(), "only host can start game.", ErrorCode.NONE);
 				return;
 			}
+			
+			m_rooms.get(roomIdx).fill();
 			
 			World world = null;
 			for (int i = 0; i < m_worlds.size(); i++) {

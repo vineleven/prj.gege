@@ -29,7 +29,7 @@ public class PanelLoading : PanelBase
 
     public override int getLayer()
     {
-        return MgrPanel.LAYER_DIALOG;
+        return MgrPanel.LAYER_UI;
     }
 
 

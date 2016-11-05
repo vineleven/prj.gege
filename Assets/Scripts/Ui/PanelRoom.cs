@@ -139,7 +139,8 @@ public class PanelRoom : PanelBase
         }
         else
         {
-            MgrPanel.openDialog("player not enough.");
+            //MgrPanel.openDialog("player not enough.");
+            MgrNet.reqStartGame();
         }
     }
 

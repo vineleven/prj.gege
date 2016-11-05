@@ -40,7 +40,8 @@ public class GameSession {
 
 	public GameSession(Channel chn) {
 		m_chn = chn;
-		m_playerName = m_chn.remoteAddress().toString();
+		if(chn != null)
+			m_playerName = m_chn.remoteAddress().toString();
 	}
 	
 	
