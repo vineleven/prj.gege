@@ -15,8 +15,8 @@ public class GameMap {
     public final static int DIR_LEFT = 4;
     
     
-	final public static int TILE_NORMAL = 1;
-	final public static int TILE_PHY = 2;
+	final public static int TILE_NORMAL = 0;
+	final public static int TILE_PHY = 1;
 	public int[][] m_tileData;
 	private int m_row;
 	private int m_col;
@@ -69,7 +69,7 @@ public class GameMap {
 			y = rnd % m_row;
 			x = rnd / m_row;
 			
-			if(m_tileData[y][x] != TILE_PHY){
+			if(m_tileData[y][x] == TILE_NORMAL){
 				return rnd;
 			}
 			i++;
