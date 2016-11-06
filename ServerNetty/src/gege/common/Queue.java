@@ -95,4 +95,15 @@ public class Queue<T> {
             throw new OutOfMemoryError();
         return len > MAX_ARRAY_SIZE ? MAX_ARRAY_SIZE : len;
     }
+    
+    
+    public void clear(){
+		tail = 0;
+		head = 0;
+		count = 0;
+		
+		for (int i = 0; i < queue.length; i++) {
+			queue[i] = null;
+		}
+    }
 }

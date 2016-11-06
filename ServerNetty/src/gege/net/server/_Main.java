@@ -6,6 +6,7 @@ import gege.mgr.mgrSession;
 
 
 
+
 public class _Main {
 	
 	
@@ -13,7 +14,6 @@ public class _Main {
 		mgrSession.initialize();
 		Game.create().start();
 		GameServer.create().boot();
-		
 	}
 	
 	

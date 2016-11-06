@@ -143,12 +143,13 @@ public class Player : GameEntity
 
     void updatePos()
     {
-        tryMoveWithCurPos(getPosition());
+        tryMove();
     }
 
 
-    void tryMoveWithCurPos(Vector3 curPos)
+    void tryMove()
     {
+        Vector3 curPos = getPosition();
         Vector3 nextPos = m_nextPosInfo.Lerp(MgrBattle.curTime);
 
         if (m_nextPosInfo.isArrived(curPos))

@@ -1,5 +1,6 @@
 package gege.game;
 
+import gege.common.GameSession;
 import gege.common.StateData;
 import gege.consts.Cmd;
 import gege.consts.GameState;
@@ -65,6 +66,11 @@ public class World {
 	}
 	
 	
+	public GameMap getMap(){
+		return m_map;
+	}
+	
+	
 	public void createWorld(Room room){
 		m_group.clear();
 		
@@ -115,7 +121,28 @@ public class World {
 		int group = v.getGroup();
 		int idx = m_group.get(group).size();
 		v.getSession().setState(GameState.IN_GAME, new StateData(this.index, group, idx));
-		m_group.get(group).add(new Player(v.getSession(), idx));
+		if(!v.isAI()){
+			m_group.get(group).add(new Player(v.getSession(), idx));
+			v.getSession().setOnDisconnect(this::onDisconnected);
+		} else {
+			m_group.get(group).add(new AIPlayer(v.getSession(), idx, this));
+		}
+	}
+	
+	
+	private void onDisconnected(GameSession session){
+		Player player = getPlayer(session.getStateData().int2, session.getStateData().int3);
+		player.setNextState(Player.STATE_OFFLINE);
+		// 检查是否没有玩家了
+		for (int i = 0; i < m_group.size(); i++) {
+			for (int j = 0; j < m_group.get(i).size(); j++) {
+				if(!m_group.get(i).get(j).m_hasAI){
+					return;
+				}
+			}
+		}
+		
+		closeWorld();
 	}
 	
 	
@@ -181,8 +208,18 @@ public class World {
 	}
 	
 	
+	protected ArrayList<Player> getGroup(int group){
+		return m_group.get(group);
+	}
+	
+	
 	public Player getPlayer(int group, int index){
 		return m_group.get(group).get(index);
+	}
+	
+	
+	public LinkedList<GameItem> getItems(){
+		return m_items;
 	}
 	
 	
@@ -203,7 +240,7 @@ public class World {
 		});
 		
 		data.put("list", players);
-		data.put("time", Game.getInstance().getCurTime() + delay);
+		data.put("time", Game.worldTime + delay);
 		
 		foreach(p -> {
 			if(!p.isDisposed()){
@@ -229,7 +266,7 @@ public class World {
 		});
 		m_bStart = true;
 		// 1分钟游戏时间
-		m_gameOverTime = Game.getInstance().getCurTime() + 60000;
+		m_gameOverTime = Game.worldTime + 60000;
 	}
 	
 	
@@ -243,7 +280,7 @@ public class World {
 		updateItem();
 		collisionItems();
 		
-		if(m_gameOverTime <= Game.getInstance().getCurTime())
+		if(m_gameOverTime <= Game.worldTime)
 			onGameOver();
 	}
 	
@@ -254,7 +291,7 @@ public class World {
 	
 	
 	private void updateItem(){
-		if(m_createItemTime > Game.getInstance().getCurTime())
+		if(m_createItemTime > Game.worldTime)
 			return;
 		
 		// 5秒钟刷一次道具

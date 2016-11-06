@@ -1,7 +1,6 @@
 package gege.game;
 
-import java.util.List;
-
+import gege.common.Queue;
 import gege.util.Logger;
 import gege.util.Mathf;
 
@@ -112,18 +111,18 @@ public class GameMap {
     }
 	
 	
-    public void findPath(Vector3 curPos, int dir1, int dir2, List<Vector3> list)
+    public void findPath(float curX, float curY, int dir1, int dir2, Queue<Vector3> list)
     {
         int nextCount = dir2 == DIR_NONE ? 1 : 2;
-        int i = pos2index(curPos.y);
-        int j = pos2index(curPos.x);
+        int i = pos2index(curY);
+        int j = pos2index(curX);
 
         for (int count = 0; count < nextCount; count++)
         {
             Vector3 p = moveTo(i, j, dir1);
             if (p != null)
             {
-                list.add(p);
+                list.enqueue(p);
 				i = (int) p.y;
 				j = (int) p.x;
             }
@@ -132,7 +131,7 @@ public class GameMap {
                 p = moveTo(i, j, dir2);
 				if (p != null)
 				{
-					list.add(p);
+					list.enqueue(p);
 					i = (int) p.y;
 					j = (int) p.x;
 				}

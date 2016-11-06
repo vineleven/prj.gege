@@ -63,7 +63,8 @@ public class Game extends TickThread {
 	
 	
 	
-	
+	public static long worldTime = 0;
+	public static long deltaTime = 0;
 	
 	interface RequestListener{ void onRequest(Request req);}
 	
@@ -162,6 +163,11 @@ public class Game extends TickThread {
 	 */
 	public long getCurTime(){ return getLastTickTime(); }
 	
+	// 这里假定是稳定的
+	public long getDeltaTime(){
+		return getInterval();
+	}
+	
 	
 	public void callLaterTime(int delay, Callback callback){
 		m_callLaters.addLast(new LaterCall(delay + getCurTime(), callback));
@@ -192,6 +198,8 @@ public class Game extends TickThread {
 	@Override
 	public void onUpdate() {
 		try {
+			deltaTime = getCurTime() - worldTime;
+			worldTime = getCurTime();
 			procRequest();
 			procLaterCall();
 			updateGameLogic();

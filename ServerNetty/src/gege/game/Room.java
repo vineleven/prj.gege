@@ -135,6 +135,7 @@ public class Room {
 				GameSession session = new AIPlayer.AISession();
 				session.setName("AI_NO:" + i);
 				Visitor v = new Visitor(session, index);
+				v.setAI();
 				m_groups.get(i).add(v);
 				v.setGroup(i);
 			}

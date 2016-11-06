@@ -100,7 +100,7 @@ public class GameSession {
 	 */
 	public void send(int cmd, JSONObject data) {
 		if( m_chn == null ){
-			Logger.error( "Session send: channel is null." );
+//			Logger.error( "Session send: channel is null." );
 			return;
 		}
 		

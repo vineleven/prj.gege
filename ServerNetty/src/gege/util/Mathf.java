@@ -23,6 +23,24 @@ public class Mathf {
 	
 	
 	/**
+	 * @param len
+	 * @return 随机[1,len]
+	 */
+	public static int[] randomArray(int len){
+		int[] order = new int[len];
+		int rnd;
+		for (int i = 1; i <= len; i++) {
+			do {
+				rnd = randomInt(0, len);
+			} while (order[rnd] != 0);
+			order[rnd] = i;
+		}
+		
+		return order;
+	}
+	
+	
+	/**
 	 * 圆饼概率，计算所有的和，然后随机到其中一个(必然会随机到其中一个)
 	 * @param rates 概率列表
 	 * @return -1 失败

@@ -21,7 +21,7 @@ public class Player extends GameEntity{
 	
 	private int m_group;
 	
-	private float m_speed = 3f / 1000;
+	float m_speed = 3f / 1000;
 	
 	PosInfo m_nextPos;
 	
@@ -33,13 +33,13 @@ public class Player extends GameEntity{
 	
 	// 复活时间
 	long m_reliveTime = 0;
+	
+	boolean m_hasAI = false;
 
 	
 	public Player(GameSession session, int index) {
 		m_session = session;
 		m_index = index;
-		
-		m_session.setOnDisconnect(this::onDisconnected);
 	}
 	
 	
@@ -94,11 +94,6 @@ public class Player extends GameEntity{
 	}
 	
 	
-	private void onDisconnected(GameSession session){
-		setNextState(STATE_OFFLINE);
-	}
-	
-	
 	public boolean isOnline(){
 		return m_session.enabled();
 	}
@@ -126,18 +121,18 @@ public class Player extends GameEntity{
 	}
 	
 	
-	private void setNextPos(float nextX, float nextY, long arriveTime){
-		int delta = (int) (arriveTime - Game.getInstance().getCurTime());
+	void setNextPos(float nextX, float nextY, long arriveTime){
+		int delta = (int) (arriveTime - Game.worldTime);
 		m_nextPos.reset(x, y, nextX, nextY, delta, arriveTime);
 	}
 	
 	
-	boolean updatePos(){
+	boolean tryMove(){
 //		if(m_group == 0)
 //			Logger.debug("--- debugPos x:" + x + " y:" + y + " nx:" + m_nextPos.m_nextX + " ny:" + m_nextPos.m_nextY + " delta:" + m_nextPos.m_delta);
 		
 		if(!m_nextPos.isArrived(x, y)){
-			float t = (Game.getInstance().getCurTime() - m_nextPos.m_arriveTime) / m_nextPos.m_delta;
+			float t = (m_nextPos.m_arriveTime - Game.worldTime) / m_nextPos.m_delta;
 			t = 1 - t;
 			x = m_nextPos.lerpX(t);
 			y = m_nextPos.lerpY(t);
@@ -172,12 +167,12 @@ public class Player extends GameEntity{
 	
 	
 	private void onUpdateNormal(){
-		updatePos();
+		tryMove();
 	}
 	
 	
 	private void onUpdateDead(){
-		if(m_reliveTime > Game.getInstance().getCurTime())
+		if(m_reliveTime > Game.worldTime)
 			return;
 		
 		relive();
@@ -185,7 +180,7 @@ public class Player extends GameEntity{
 	
 	
 	private void onUpdateInvincible(){
-		updatePos();
+		tryMove();
 	}
 	
 	
@@ -253,7 +248,7 @@ public class Player extends GameEntity{
 	 */
 	public void dead(float reliveX, float reliveY){
 		// 3秒后复活
-		m_reliveTime = Game.getInstance().getCurTime() + 3000;
+		m_reliveTime = Game.worldTime + 3000;
 		m_nextPos.reset(reliveX, reliveY, reliveX, reliveY, 1, 0);
 		setPosition(reliveX, reliveY);
 		setNextState(STATE_DEAD);
