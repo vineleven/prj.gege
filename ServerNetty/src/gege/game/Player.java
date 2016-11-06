@@ -35,7 +35,7 @@ public class Player extends GameEntity{
 	long m_reliveTime = 0;
 	
 	boolean m_hasAI = false;
-
+	
 	
 	public Player(GameSession session, int index) {
 		m_session = session;
@@ -259,8 +259,5 @@ public class Player extends GameEntity{
 		Game.dispatchGameEvent(EventId.PLAYER_RELIVE, this);
 		setNextState(STATE_NORMAL);
 	}
-	
-	
-	
 	
 }

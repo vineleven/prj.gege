@@ -5,7 +5,6 @@ import gege.common.StateData;
 import gege.consts.Cmd;
 import gege.consts.GameState;
 import gege.game.Room.Visitor;
-import gege.util.Mathf;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,6 +39,8 @@ public class World {
 	
 	private int[] m_scores;
 	
+	int m_sideCount;
+	
 	private ArrayList<ArrayList<Player>> m_group = new ArrayList<ArrayList<Player>>(2);;
 	
 	private LinkedList<GameItem> m_items = new LinkedList<>();
@@ -50,8 +51,9 @@ public class World {
 	// 游戏结束时间
 	private long m_gameOverTime = 0;
 	
-	// 创建道具的时间
-	private long m_createItemTime = 0;
+	
+	// 物品最大数量
+	private int m_itemMaxCount;
 	
 	
 	protected int m_state = STATE_NORMAL;
@@ -83,6 +85,8 @@ public class World {
 		m_map = new GameMap();
 		// 玩家
 		int sideCount = room.getSideCount();
+		m_sideCount = sideCount;
+		
 		for (int i = 0; i < 2; i++) {
 			m_group.add(new ArrayList<Player>(sideCount));
 		}
@@ -255,6 +259,7 @@ public class World {
 	public void start(){
 		int delay = 3000;
 		notifyStartInfo(delay);
+		createItem(4);
 		Game.getInstance().callLaterTime(delay, this::onStart);
 		m_state = STATE_NORMAL;
 	}
@@ -291,19 +296,46 @@ public class World {
 	
 	
 	private void updateItem(){
-		if(m_createItemTime > Game.worldTime)
+		if(m_items.size() >= m_itemMaxCount){
 			return;
+		}
 		
-		// 5秒钟刷一次道具
-		Vector3 pos = m_map.getEmptyPos();
-		for (int j = 0; j < m_items.size(); j++) {
-			if(m_items.get(j).inPos(pos)){
-				return;
-			}
+		int[] counts = new int[2];
+				
+		for (GameItem gameItem : m_items) {
+			counts[gameItem.getType()]++;
 		}
 		
 		// 随机一个物品
-		GameItem item = new GameItem(Mathf.randomInt(0, 2));
+		addItem(counts[0] < counts[1] ? 0 : 1);
+	}
+	
+	
+	
+	private void createItem(int count){
+		m_itemMaxCount = count;
+		int sideCount = count / 2;
+		for (int i = 0; i < sideCount; i++) {
+			addItem(GameItem.TYPE_RED);
+			addItem(GameItem.TYPE_BLUE);
+		}
+	}
+	
+	
+	private void addItem(int type){
+		Vector3 pos;
+		out: while(true){
+			pos = m_map.getEmptyPos();
+			for (int j = 0; j < m_items.size(); j++) {
+				if(m_items.get(j).inPos(pos)){
+					continue out;
+				}
+			}
+			
+			break;
+		}
+		
+		GameItem item = new GameItem(type);
 		item.setPosition(pos.x, pos.y);
 		
 		m_items.add(item);
@@ -317,8 +349,6 @@ public class World {
 		foreach(player->{
 			player.send(Cmd.S2C_NEW_ITEM, data);
 		});
-		
-		m_createItemTime = Game.getInstance().getCurTime() + 5000;
 	}
 	
 	
@@ -342,6 +372,7 @@ public class World {
 				if(!player2.isNormal())
 					continue;
 				
+//				player1.recordDistance(player2);
 				if(player1.tryCollision(player2)){
 					if(inState(player1.getGroup())){
 						notifyWinnerAndLoser(player1, player2);

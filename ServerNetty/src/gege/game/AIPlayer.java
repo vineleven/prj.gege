@@ -1,7 +1,5 @@
 package gege.game;
 
-import java.util.ArrayList;
-
 import gege.common.GameSession;
 import gege.common.Queue;
 import gege.consts.Cmd;
@@ -10,29 +8,44 @@ import gege.exception.GameException;
 import gege.util.Logger;
 import gege.util.Mathf;
 
+import java.util.ArrayList;
+
 import org.json.JSONObject;
 
 public class AIPlayer extends Player {
 
 	private World m_world;
 	
-	private long m_changeDirTime = 0;
 	
 	private Queue<Vector3> m_paths = new Queue<>();
 	
 	private int m_dir1 = 0;
 	private int m_dir2 = 0;
 	
+	// 跟各个entry的距离评估
+	float[] m_distances;
+	
+	// 最多0.5秒变换一次方向
+	private long m_changeDirTime = 0;
+	
+	private Player m_nearestPlayer;
+	
+	private boolean m_bNearestChanged = false;
+	
 	
 	public AIPlayer(GameSession session, int index, World world) {
 		super(session, index);
 		m_world = world;
 		m_hasAI = true;
+		if(world != null)
+			m_distances = new float[world.m_sideCount];
 	}
-
+	
+	
 	
 	@Override
 	boolean tryMove() {
+		// 这里需要保证移动到下一格的时候再寻路（避免移动方便的问题）
 		if(super.tryMove()){
 			// 预测下一帧
 			float t = (m_nextPos.m_arriveTime - Game.worldTime - Game.deltaTime) / m_nextPos.m_delta;
@@ -43,8 +56,26 @@ public class AIPlayer extends Player {
 				return true;
 		}
 		
-		if(m_changeDirTime <= Game.worldTime)
-			findNextPath();
+		Player nearestP = getNearestPlayer();
+		if(m_nearestPlayer != nearestP){
+//			findNextPathByNearestPlayer();
+		} else {
+			
+		}
+//		m_nearestPlayer = getNearestPlayer();
+		
+		//移动
+
+		// 每次到拐点的时候，切换方向
+		if(m_world.getMap().getMovableDirCount(x, y) >= 3){
+			findNextPathByNearestPlayer();
+		}
+		
+		// 如果靠近敌人则跑
+		
+		
+//		if(m_changeDirTime <= Game.worldTime)
+//			findNextPath();
 		
 		gotoNext();
 		
@@ -64,14 +95,17 @@ public class AIPlayer extends Player {
 //					m_dir2 = GameMap.DIR_NONE;
 					m_world.getMap().findPath(x,  y, m_dir2, GameMap.DIR_NONE, m_paths);
 					if(m_paths.size() == 0)
-						findNextPath();
+						findNextPathByNearestPlayer();
 				} else {
-					findNextPath();
+					findNextPathByNearestPlayer();
 				}
 			}
 		}
 		
 		Vector3 next = m_paths.dequeue();
+		if(next == null)
+			return;
+		
 		float time = Mathf.distance(x, y, next.x, next.y) / m_speed;
 		setNextPos(next.x, next.y, Game.worldTime + (int)time);
 		// 广播
@@ -91,8 +125,33 @@ public class AIPlayer extends Player {
 	}
 	
 	
-	// 需要保证一定能找到一个点
-	private void findNextPath(){
+	// 需要保证一定能找到一个点（AI主逻辑）
+	private void findNextPathByNearestPlayer(){
+		if(m_changeDirTime > Game.worldTime)
+			return;
+		
+		// 首先，要么追，要么跑
+		// 如果追：靠近最近的敌人(能避免吃到对方的颜色更好)
+		// 如果跑：远离最近的敌人(能迟到自己的颜色更好)
+		
+//		calcAllRelativDistance();
+		//*
+		if(m_nearestPlayer == null){
+			m_dir1 = Mathf.randomInt(1, 5);
+			m_dir2 = m_dir1 + 1 > 4 ? m_dir1 - 1 : m_dir1 + 1;
+		} else {
+			if(m_world.inState(getGroup())){
+				// 追人
+				setDir(m_nearestPlayer.x - x, m_nearestPlayer.y - y);
+			} else {
+				// 逃跑
+				setDir(x - m_nearestPlayer.x, y - m_nearestPlayer.y);
+			}
+		}
+		//*/
+		
+		
+		/*
 		if(m_world.inState(getGroup())){
 			// 找人追
 			ArrayList<Player> group = m_world.getGroup(1 - getGroup());
@@ -127,7 +186,14 @@ public class AIPlayer extends Player {
 				setDir(emptyPos.x - x,  emptyPos.y - y);
 			}
 		}
-		
+		//*/
+		m_changeDirTime = Game.worldTime + 500;
+		confirmDir();
+	}
+	
+	
+	// 确立方向
+	private void confirmDir(){
 		m_world.getMap().findPath(x,  y, m_dir1, GameMap.DIR_NONE, m_paths);
 		if(m_paths.size() == 0){
 			m_world.getMap().findPath(x,  y, m_dir2, GameMap.DIR_NONE, m_paths);
@@ -151,8 +217,8 @@ public class AIPlayer extends Player {
 				m_dir2 = temp + 2 > 4 ? temp - 2 : temp + 2;
 			}
 		}
-		m_changeDirTime = Game.worldTime + 4000;
 	}
+	
 	
 	@Override
 	public void dead(float reliveX, float reliveY) {
@@ -188,6 +254,49 @@ public class AIPlayer extends Player {
         m_dir1 = dir1;
         m_dir2 = dir2;
     }
+    
+    
+//	public void recordDistance(Player player){
+//		float dis = Math.abs(player.x - x) + Math.abs(player.y - y);
+//		m_distances[player.getIndex()] = dis;
+//		
+//		if(player.m_hasAI)
+//			((AIPlayer) player).m_distances[getIndex()] = dis;
+//	}
+    
+    private Player getNearestPlayer(){
+    	ArrayList<Player> group = m_world.getGroup(1 - getGroup());
+    	Player player;
+    	float dis;
+    	float minDis = Float.MAX_VALUE;
+    	Player nearestPlayer = null;
+    	for (int i = 0; i < group.size(); i++) {
+    		player = group.get(i);
+    		if(player.isNormal()){
+    			dis = Math.abs(player.x - x) + Math.abs(player.y - y);
+    			if(dis < minDis){
+    				minDis = dis;
+    				nearestPlayer = player;
+    			}
+    		}
+		}
+    	
+    	return nearestPlayer;
+    }
+    
+//    private void calcAllRelativDistance(){
+//    	ArrayList<Player> group = m_world.getGroup(1 - getGroup());
+//    	Player player;
+//    	float dis;
+//    	for (int i = 0; i < group.size(); i++) {
+//    		player = group.get(i);
+//			dis = Math.abs(player.x - x) + Math.abs(player.y - y);
+//			m_distances[player.getIndex()] = dis;
+//		}
+//    }
+    
+    
+	
     
     
     

@@ -53,19 +53,22 @@ public class PanelJoystick : PanelBase {
     const float MIN_LEN = 5;
 
 
-    bool m_bDrag = false;
+    Vector2 m_delta;
 
 
     public override void onBuild(Hashtable param)
     {
-        m_joy_gameObjcet = transform.FindChild("Circle").gameObject;
-        m_joy_transform = m_joy_gameObjcet.transform as RectTransform;
+        //m_joy_transform = transform.FindChild("Node/Circle") as RectTransform;
+        //originPos = m_joy_transform.localPosition;
 
-		originPos = m_joy_transform.localPosition;
+        transform.FindChild("Node").gameObject.SetActive(false);
 
-        UIEventListener.Get(m_joy_gameObjcet).onDown = OnDown;
-        UIEventListener.Get(m_joy_gameObjcet).onDrag = OnDrag;
-        UIEventListener.Get(m_joy_gameObjcet).onUp = OnUp;
+
+        var image = transform.FindChild("Image").gameObject;
+
+        UIEventListener.Get(image).onDown = OnDown;
+        UIEventListener.Get(image).onDrag = OnDrag;
+        UIEventListener.Get(image).onUp = OnUp;
 
         UpdateBehaviour.Get(gameObject).setUpdateCallback(update);
     }
@@ -73,34 +76,35 @@ public class PanelJoystick : PanelBase {
 
 	void OnDown(GameObject go, PointerEventData eventData)
 	{
-        updatePos();
-        m_bDrag = true;
+        //updatePos();
+        m_delta = Vector2.zero;
 	}
 
 
 	void OnDrag(GameObject go, PointerEventData eventData)
 	{
+        m_delta += eventData.delta;
 	}
 
 
     void OnUp(GameObject go, PointerEventData eventData)
     {
-        m_joy_transform.localPosition = originPos;
-        m_bDrag = false;
+        //m_joy_transform.localPosition = originPos;
+        EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_UPDATE_JOYSTICK, new Vector3(m_delta.x, m_delta.y));
     }
 
 
     void update()
     {
-        if (m_bDrag)
-            updatePos();
+        //if (m_bDrag)
+        //    updatePos();
     }
 
 
     void updatePos()
     {
         Vector2 local;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(transform, Input.mousePosition, MgrScene.uiCamera, out local);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)m_joy_transform.parent, Input.mousePosition, MgrScene.uiCamera, out local);
 
         Vector3 curPos = new Vector3(local.x, local.y);
         updateCirclePos(curPos);
@@ -114,6 +118,8 @@ public class PanelJoystick : PanelBase {
             curPos = Vector3.ClampMagnitude(curPos, MAX_LEN);
 
         m_joy_transform.localPosition = curPos;
+
+
 
 
         // 强制4个方向
@@ -132,7 +138,7 @@ public class PanelJoystick : PanelBase {
         //}
 
 
-        if(curLen > MIN_LEN)
-            EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_UPDATE_JOYSTICK, curPos);
+        //if(curLen > MIN_LEN)
+        //    EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_UPDATE_JOYSTICK, curPos);
 	}
 }

@@ -52,7 +52,7 @@ public abstract class GameEntity {
 			return false;
 		if(y + halfh < entity.y - entity.halfh)
 			return false;
-		
+
 		return true;
 	}
 	

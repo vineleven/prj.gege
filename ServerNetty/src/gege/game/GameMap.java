@@ -140,21 +140,63 @@ public class GameMap {
     }
     
     
+    public int getMovableDirCount(float curX, float curY){
+    	int i = pos2index(curY);
+        int j = pos2index(curX);
+    	int count = 0;
+    	for (int dir = 1; dir <= 4; dir++) {
+			if(checkDir(i, j, dir))
+				count++;
+		}
+    	
+    	return count;
+    }
+    
+    
+    boolean checkDir(int i, int j, int dir){
+    	switch (dir)
+        {
+            case DIR_UP:
+                i += 1;
+                break;
+            case DIR_RIGHT:
+            	j += 1;
+            	break;
+            case DIR_DOWN:
+            	i -= 1;
+            	break;
+            case DIR_LEFT:
+            	j -= 1;
+            	break;
+            default:
+                return false;
+        }
+    	
+    	return checkMap(i, j);
+    }
+    
+    
     Vector3 moveTo(int i, int j, int dir)
     {
         switch (dir)
         {
             case DIR_UP:
-                return getMapPoint(i + 1, j);
+                i += 1;
+                break;
             case DIR_RIGHT:
-                return getMapPoint(i, j + 1);
+            	j += 1;
+            	break;
             case DIR_DOWN:
-                return getMapPoint(i - 1, j);
+            	i -= 1;
+            	break;
             case DIR_LEFT:
-                return getMapPoint(i, j - 1);
+            	j -= 1;
+            	break;
             default:
                 return null;
         }
+        
+        return getMapPoint(i, j);
     }
     
     

@@ -1,6 +1,8 @@
 package gege.net.server;
 
+import gege.game.AIPlayer;
 import gege.game.Game;
+import gege.game.Player;
 import gege.mgr.mgrSession;
 
 

@@ -172,6 +172,10 @@ public class Player : GameEntity
 
     public void gotoNext(Vector3 from)
     {
+        // 默认自动往前走
+        if(m_path.Count == 0)
+            findNextPath(true);
+
         if (m_path.Count > 0)
         {
             Vector3 nextPos = m_path[0];
@@ -181,7 +185,7 @@ public class Player : GameEntity
             m_path.RemoveAt(0);
 
             if (m_bMainPlayer)
-				dispatchPathInfo();
+                dispatchPathInfo();
         }
     }
 
