@@ -17,8 +17,8 @@ class MgrSocket : EventBehaviour
 
 	//端口及IP
     //static IPEndPoint ipe = new IPEndPoint(IPAddress.Parse("127.0.0.1"), SERVER_PORT);
-    static IPEndPoint ipe = new IPEndPoint(IPAddress.Parse("192.168.1.124"), SERVER_PORT);
-    //static IPEndPoint ipe = new IPEndPoint(IPAddress.Parse("192.168.1.101"), SERVER_PORT);
+    //static IPEndPoint ipe = new IPEndPoint(IPAddress.Parse("192.168.1.124"), SERVER_PORT);
+    static IPEndPoint ipe = new IPEndPoint(IPAddress.Parse("192.168.1.101"), SERVER_PORT);
 
 
     // 重新连接周期

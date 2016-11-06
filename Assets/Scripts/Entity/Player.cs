@@ -14,7 +14,6 @@ public class Player : GameEntity
     int m_index;
 
     protected int m_dir1;
-    protected int m_dir2;
 
     protected List<Vector3> m_path = new List<Vector3>(2);
 
@@ -78,14 +77,17 @@ public class Player : GameEntity
             dir2 = temp;
         }
 
-        setDir(dir1, dir2);
+        if (MgrBattle.getMap().checkDir(m_nextPosInfo.getNextPos(), dir1))
+        {
+            Tools.Log(dir1 + " x:" + getPosition().x + " y:" + getPosition().y);
+            setDir(dir1);
+        }
     }
 
 
-    public void setDir(int dir1, int dir2)
+    public void setDir(int dir1)
     {
         m_dir1 = dir1;
-        m_dir2 = dir2;
         //Tools.Log("rnd dir:" + m_dir1 + " " + m_dir2);
     }
 
@@ -93,15 +95,12 @@ public class Player : GameEntity
     /**
      * 摇杆只找一个点
      */
-    public void findNextPath(bool bJoystick)
+    public void findNextPath()
     {
         m_path.Clear();
         Vector3 curPos = getPosition();
 
-        if (bJoystick)
-            MgrBattle.getMap().findPath(curPos, m_dir1, Map.DIR_NONE, m_path);
-        else
-            MgrBattle.getMap().findPath(curPos, m_dir1, m_dir2, m_path);
+        MgrBattle.getMap().findPath(m_nextPosInfo.getNextPos(), m_dir1, Map.DIR_NONE, m_path);
 
         if (m_path.Count > 0)
         {
@@ -174,7 +173,7 @@ public class Player : GameEntity
     {
         // 默认自动往前走
         if(m_path.Count == 0)
-            findNextPath(true);
+            findNextPath();
 
         if (m_path.Count > 0)
         {

@@ -178,7 +178,6 @@ public class Map {
 					i = p.i;
 					j = p.j;
 				}
-                    
             }
         }
     }
@@ -231,6 +230,32 @@ public class Map {
     {
         return new Vector3(p.j, p.i, 0);
     }
+
+
+    public bool checkDir(Vector3 pos, int dir)
+    {
+        int i = pos2index(pos.y);
+        int j = pos2index(pos.x);
+        switch (dir)
+        {
+            case DIR_UP:
+                return checkMap(i + 1, j);
+            case DIR_RIGHT:
+                return checkMap(i, j + 1);
+            case DIR_DOWN:
+                return checkMap(i - 1, j);
+            case DIR_LEFT:
+                return checkMap(i, j - 1);
+            default:
+                return false;
+        }
+    }
+
+
+
+
+
+
 
 
 

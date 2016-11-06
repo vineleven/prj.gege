@@ -29,6 +29,23 @@ public class Tools {
 	}
 
 
+    public static int[] RandomArray(int len)
+    {
+        int[] order = new int[len];
+        int rnd;
+        for (int i = 1; i <= len; i++)
+        {
+            do
+            {
+                rnd = Random(0, len);
+            } while (order[rnd] != 0);
+            order[rnd] = i;
+        }
+
+        return order;
+    }
+
+
     public static long getCurTime()
     {
         return DateTime.Now.Ticks / 10000;

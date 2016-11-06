@@ -5,12 +5,12 @@ public class FollowTarget : MonoBehaviour {
 
 
 
-	Transform target;
+	public Transform target;
     public float height = -6f;
     public float distance = -12f;
     
-    private float _xRotation = -30;
-    public float xRotation = 0;
+    private float _xRotation = 0;
+    public float xRotation = -30;
 
 	public float time = 0.1f;
 

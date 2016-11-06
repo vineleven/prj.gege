@@ -399,7 +399,7 @@ public class MgrBattle : EventBehaviour
             else
             {
                 m_mainPlayer.setDir(dir);
-                m_mainPlayer.findNextPath(true);
+                m_mainPlayer.findNextPath();
             }
         }
     }

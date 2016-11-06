@@ -58,7 +58,7 @@ public class AIPlayer extends Player {
 		
 		Player nearestP = getNearestPlayer();
 		if(m_nearestPlayer != nearestP){
-//			findNextPathByNearestPlayer();
+			findNextPathByNearestPlayer();
 		} else {
 			
 		}

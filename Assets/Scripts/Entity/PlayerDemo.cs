@@ -3,7 +3,7 @@ using System.Collections;
 
 public class PlayerDemo : Player
 {
-    const int CHANGE_DIR_DELTA_TIME = 3000;
+    const int CHANGE_DIR_DELTA_TIME = 5000;
     const float SPEED = 3f / 1000;
 
 
@@ -22,24 +22,25 @@ public class PlayerDemo : Player
 
     void randomDir()
     {
-        Vector3 dir = Vector3.zero;
-        dir.x = Tools.Random(-10, 11);
-        dir.y = Tools.Random(-10, 11);
-        setDir(dir);
-
-        int count = 0;
-        while (count++ < 60 && m_path.Count < 1)
+        int[] dirs = Tools.RandomArray(4);
+        for (int i = 0; i < dirs.Length; i++)
         {
-            findNextPath(false);
+            if (MgrBattle.getMap().checkDir(m_nextPosInfo.getNextPos(), dirs[i]))
+            {
+                m_dir1 = dirs[i];
+                break;
+            }
         }
+
+        findNextPath();
     }
 
 
     public void findNextPathFromUser()
     {
-        m_setDirTime = MgrBattle.getCurTime() + 3000;
-        m_changeDirNextTime = MgrBattle.getCurTime() + CHANGE_DIR_DELTA_TIME;
-        findNextPath(true);
+        //m_setDirTime = MgrBattle.getCurTime() + 3000;
+        //m_changeDirNextTime = MgrBattle.getCurTime() + CHANGE_DIR_DELTA_TIME;
+        //findNextPath();
     }
 
 
@@ -52,11 +53,12 @@ public class PlayerDemo : Player
 
         if (m_path.Count < 1)
         {
-            int count = 0;
-            while (count++ < 10 && m_path.Count < 1)
-            {
-                findNextPath(false);
-            }
+			findNextPath ();
+			if(m_path.Count < 1)
+			{
+				randomDir();
+				m_changeDirNextTime = MgrBattle.getCurTime() + CHANGE_DIR_DELTA_TIME;
+			}
         }
 
         if (m_changeDirNextTime < MgrBattle.getCurTime())
