@@ -36,4 +36,13 @@ public class Logger {
 	public static void errorf(String formatStr, Object... args) {
 		System.err.printf( "[error] " + formatStr + "\n", args);
 	}
+	
+	
+	public static void traceback(){
+		try{
+			throw new Exception();
+		} catch(Exception e){
+			e.printStackTrace();
+		}
+	}
 }

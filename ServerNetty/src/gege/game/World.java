@@ -46,7 +46,7 @@ public class World {
 	private LinkedList<GameItem> m_items = new LinkedList<>();
 	
 	
-	private float m_speed = 3f / 1000;
+	private float m_speed = 4f / 1000;
 	
 	// 游戏结束时间
 	private long m_gameOverTime = 0;
@@ -75,7 +75,6 @@ public class World {
 	
 	public void createWorld(Room room){
 		m_group.clear();
-		
 		
 		// 地图
 //		int col = 15;
@@ -134,26 +133,29 @@ public class World {
 	}
 	
 	
-	private void onDisconnected(GameSession session){
+	private synchronized void onDisconnected(GameSession session){
 		Player player = getPlayer(session.getStateData().int2, session.getStateData().int3);
 		player.setNextState(Player.STATE_OFFLINE);
+		if(checkEmpty())
 		// 检查是否没有玩家了
-		for (int i = 0; i < m_group.size(); i++) {
-			for (int j = 0; j < m_group.get(i).size(); j++) {
-				if(!m_group.get(i).get(j).m_hasAI){
-					return;
-				}
-			}
-		}
+//		for (int i = 0; i < m_group.size(); i++) {
+//			for (int j = 0; j < m_group.get(i).size(); j++) {
+//				if(!m_group.get(i).get(j).m_hasAI){
+//					return;
+//				}
+//			}
+//		}
 		
 		closeWorld();
 	}
 	
 	
-	public boolean empty(){
+	public synchronized boolean checkEmpty(){
+		Player player;
 		for (int i = 0; i < m_group.size(); i++) {
 			for (int j = 0; j < m_group.get(i).size(); j++) {
-				if(m_group.get(i).get(j).isOnline())
+				player = m_group.get(i).get(j);
+				if(!player.m_hasAI && player.isOnline())
 					return false;
 			}
 		}
@@ -187,7 +189,7 @@ public class World {
 	}
 	
 	
-	public void closeWorld(){
+	public synchronized void closeWorld(){
 		foreach(player -> {
 			if(!player.isDisposed()){
 				player.getSession().setOnDisconnect(null);
@@ -245,7 +247,7 @@ public class World {
 		
 		data.put("list", players);
 		data.put("time", Game.worldTime + delay);
-		
+		data.put("speed", m_speed);
 		foreach(p -> {
 			if(!p.isDisposed()){
 				data.put("idx", p.getIndex());
@@ -425,6 +427,9 @@ public class World {
 		
 		foreach(p -> {
 			p.send(Cmd.S2C_ITEM_CHANGE, data);
+			if(p.m_hasAI){
+				((AIPlayer)p).changeSituation();
+			}
 		});
 		
 		m_state = item.getType();

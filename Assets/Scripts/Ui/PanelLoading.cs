@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 using Global;
+using System;
 
 
 
@@ -47,18 +48,47 @@ public class PanelLoading : PanelBase
     private PanelLoading()
     {
         addEventCallback(EventId.UI_CLOSE_LOADING, onClose);
+        addEventCallback(EventId.UI_UPDATE_LOADING, onUpdate);
         startProcMsg();
     }
 
 
+    Text m_text;
     public override void onBuild(Hashtable param)
     {
+        m_text = transform.FindChild("Text").GetComponent<Text>();
+        m_text.text = "0%";
     }
 
 
     public void onClose(GameEvent e)
     {
         close();
+    }
+
+
+    public void onUpdate(GameEvent e)
+    {
+        float p = (float)e.getData();
+        p = Mathf.Lerp(0, 1, p);
+        if (p >= 1)
+        {
+            m_text.text = "100%";
+            MgrTimer.callLaterTime(0, closeLater);
+        }
+        else
+        {
+            m_text.text = Mathf.FloorToInt(p * 100) + "%";
+        }
+    }
+
+
+    public void closeLater(object obj)
+    {
+        if (m_inst != null)
+        {
+            close();
+        }
     }
 
 }

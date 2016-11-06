@@ -21,7 +21,7 @@ public class Player extends GameEntity{
 	
 	private int m_group;
 	
-	float m_speed = 3f / 1000;
+	float m_speed = 0;
 	
 	PosInfo m_nextPos;
 	
@@ -113,7 +113,7 @@ public class Player extends GameEntity{
 		JSONObject info = new JSONObject();
 		info.put("x", m_nextPos.m_originX);
 		info.put("y", m_nextPos.m_originY);
-		info.put("s", m_speed);
+//		info.put("s", m_speed);
 		info.put("g", m_group);
 		info.put("i", m_index);
 		

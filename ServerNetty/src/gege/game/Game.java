@@ -360,7 +360,7 @@ public class Game extends TickThread {
 			
 			World world = null;
 			for (int i = 0; i < m_worlds.size(); i++) {
-				if(m_worlds.get(i).empty()){
+				if(m_worlds.get(i).checkEmpty()){
 					world = m_worlds.get(i);
 					break;
 				}

@@ -12,7 +12,8 @@ public class MgrBattle : EventBehaviour
 
     const int STATE_IDLE = 0;
     const int STATE_DEMO = 1;
-    const int STATE_GAME = 2;
+    const int STATE_LOADING = 2;
+    const int STATE_GAME = 3;
 
 
     static int[] m_scores;
@@ -34,7 +35,9 @@ public class MgrBattle : EventBehaviour
 
     static int m_state = STATE_IDLE;
 
-
+    // 这个时间只是为了计算loading
+    private static long m_receiveStartGameTime = 0;
+    private static long m_startGameTime = 0;
 
     public static long deltaTime = 0;
 
@@ -87,7 +90,7 @@ public class MgrBattle : EventBehaviour
 
         m_follower.SetTarget(player.transform);
         m_players.Add(player);
-        startGame(null);
+        curTime = getCurTime();
         m_playerDemo = player;
 
 		setNextState(STATE_DEMO);
@@ -98,10 +101,15 @@ public class MgrBattle : EventBehaviour
     {
         m_playerIndex = Convert.ToInt32(data["idx"]);
         m_group = Convert.ToInt32(data["group"]);
+        m_startGameTime = Convert.ToInt64(data["time"]);
+        m_receiveStartGameTime = MgrNet.getServerTime();
 
-        long startTime = Convert.ToInt64(data["time"]);
+        if (m_startGameTime <= m_receiveStartGameTime)
+            m_startGameTime = m_receiveStartGameTime + 1;
+
         ArrayList mapData = data["map"] as ArrayList;
         ArrayList players = data["list"] as ArrayList;
+        float speed = Convert.ToSingle(data["speed"]);
 
         clear();
 
@@ -110,23 +118,24 @@ public class MgrBattle : EventBehaviour
 
         Hashtable pData;
         int group, idx;
-        float x, y, speed;
+        float x, y;
         for (int i = 0; i < players.Count; i++)
         {
             pData = players[i] as Hashtable;
             group = Convert.ToInt32(pData["g"]);
             x = Convert.ToSingle(pData["x"]);
             y = Convert.ToSingle(pData["y"]);
-            speed = Convert.ToSingle(pData["s"]);
+            //speed = Convert.ToSingle(pData["s"]);
             idx = Convert.ToInt32(pData["i"]);
 
             createPlayer(group, idx, x, y, speed);
         }
 
-        Tools.Log("delta time: " + (startTime - MgrNet.getServerTime()));
-        MgrTimer.callLaterTime((int)(startTime - MgrNet.getServerTime()), startGame, "");
+
+        setNextState(STATE_LOADING);
+        curTime = getCurTime();
 		EventDispatcher.getGlobalInstance().dispatchEvent(EventId.MSG_GAME_START);
-		setNextState(STATE_GAME);
+        MgrPanel.openLoading();
     }
 
 
@@ -338,7 +347,7 @@ public class MgrBattle : EventBehaviour
         {
             return Tools.getCurTime();
         }
-        else if(m_state == STATE_GAME)
+        else if(m_state == STATE_GAME || m_state == STATE_LOADING)
         {
             return MgrNet.getServerTime();
         }
@@ -349,14 +358,11 @@ public class MgrBattle : EventBehaviour
     }
 
 
-    static void startGame(object o)
+    static void startGame()
     {
-        curTime = getCurTime();
-        if (o != null)
-        {
-            MgrPanel.openJoyStick();
-            EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_UPDATE_DEBUG_INFO, "");
-        }
+        MgrPanel.openJoyStick();
+        EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_UPDATE_DEBUG_INFO, "");
+        setNextState(STATE_GAME);
     }
 
 
@@ -364,11 +370,25 @@ public class MgrBattle : EventBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (m_state == STATE_IDLE) return;
-
         long now = getCurTime();
         deltaTime = now - curTime;
         curTime = now;
+
+        if (m_state == STATE_IDLE) return;
+        switch (m_state)
+        {
+            case STATE_IDLE:
+                return;
+            case STATE_LOADING:
+                float p = (m_startGameTime - now) / (float)(m_startGameTime - m_receiveStartGameTime);
+                p = 1 - p;
+
+                EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_UPDATE_LOADING, p);
+                if (p >= 1)
+                    startGame();
+                break;
+        }
+        
 
         foreach (var p in m_players)
         {

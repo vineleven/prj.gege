@@ -9,6 +9,7 @@ import gege.util.Logger;
 import gege.util.Mathf;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import org.json.JSONObject;
 
@@ -19,8 +20,8 @@ public class AIPlayer extends Player {
 	
 	private Queue<Vector3> m_paths = new Queue<>();
 	
-	private int m_dir1 = 0;
-	private int m_dir2 = 0;
+	private int m_dir1 = GameMap.DIR_NONE;
+	private int m_dir2 = GameMap.DIR_NONE;
 	
 	// 跟各个entry的距离评估
 	float[] m_distances;
@@ -30,7 +31,7 @@ public class AIPlayer extends Player {
 	
 	private Player m_nearestPlayer;
 	
-	private boolean m_bNearestChanged = false;
+	private boolean m_bSituationChanged = false;
 	
 	
 	public AIPlayer(GameSession session, int index, World world) {
@@ -58,11 +59,12 @@ public class AIPlayer extends Player {
 		
 		Player nearestP = getNearestPlayer();
 		if(m_nearestPlayer != nearestP){
-			findNextPathByNearestPlayer();
-		} else {
-			
+			m_nearestPlayer = nearestP;
+			m_bSituationChanged = true;
 		}
-//		m_nearestPlayer = getNearestPlayer();
+		
+		if(m_bSituationChanged)
+			findNextPathByNearestPlayer();
 		
 		//移动
 
@@ -90,15 +92,7 @@ public class AIPlayer extends Player {
 			// 继续当前方向
 			m_world.getMap().findPath(x,  y, m_dir1, GameMap.DIR_NONE, m_paths);
 			if(m_paths.size() == 0){
-				if(m_dir2 != GameMap.DIR_NONE){
-//					m_dir1 = m_dir2;
-//					m_dir2 = GameMap.DIR_NONE;
-					m_world.getMap().findPath(x,  y, m_dir2, GameMap.DIR_NONE, m_paths);
-					if(m_paths.size() == 0)
-						findNextPathByNearestPlayer();
-				} else {
-					findNextPathByNearestPlayer();
-				}
+				findNextPathByNearestPlayer();
 			}
 		}
 		
@@ -145,7 +139,17 @@ public class AIPlayer extends Player {
 				setDir(m_nearestPlayer.x - x, m_nearestPlayer.y - y);
 			} else {
 				// 逃跑
+				// 在不被敌人吃的情况下，会优先往道具跑
+				GameItem item = getNearestItem(getGroup());
+				
+				// 这里只是借助方法算方向
+//				setDir(item.x - x, item.y - y);
+//				int itemDir1 = m_dir1;
+//				int itemDir2 = m_dir2;
+				
 				setDir(x - m_nearestPlayer.x, y - m_nearestPlayer.y);
+//				if(Math.abs(itemDir1 - m_dir1) != 0){
+//				}
 			}
 		}
 		//*/
@@ -217,6 +221,9 @@ public class AIPlayer extends Player {
 				m_dir2 = temp + 2 > 4 ? temp - 2 : temp + 2;
 			}
 		}
+		
+//		Logger.debug("confirm:" + m_dir1 + " "  + m_dir2);
+//		Logger.traceback();
 	}
 	
 	
@@ -233,6 +240,7 @@ public class AIPlayer extends Player {
 	 */
     public void setDir(float dirX, float dirY)
     {
+//    	Logger.debug("setDir x:" + dirX + " y:" + dirY);
         int dir1, dir2;
         if (dirY > 0)
             dir1 = GameMap.DIR_UP;
@@ -282,6 +290,29 @@ public class AIPlayer extends Player {
 		}
     	
     	return nearestPlayer;
+    }
+    
+    private GameItem getNearestItem(int type){
+    	LinkedList<GameItem> items = m_world.getItems();
+    	GameItem itemNear = null;
+    	float dis;
+    	float minDis = Float.MAX_VALUE;
+    	for (GameItem item : items) {
+    		if(item.getType() != type)
+    			continue;
+    		
+			dis = Math.abs(item.x - x) + Math.abs(item.y - y);
+			if(dis < minDis){
+				minDis = dis;
+				itemNear = item;
+			}
+		}
+    	return itemNear;
+    }
+    
+    
+    void changeSituation(){
+    	m_bSituationChanged = true;
     }
     
 //    private void calcAllRelativDistance(){

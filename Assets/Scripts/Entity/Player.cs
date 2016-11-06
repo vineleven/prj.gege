@@ -79,7 +79,6 @@ public class Player : GameEntity
 
         if (MgrBattle.getMap().checkDir(m_nextPosInfo.getNextPos(), dir1))
         {
-            Tools.Log(dir1 + " x:" + getPosition().x + " y:" + getPosition().y);
             setDir(dir1);
         }
     }

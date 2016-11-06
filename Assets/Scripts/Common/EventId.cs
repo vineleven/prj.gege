@@ -24,8 +24,8 @@ public enum EventId {
     // 更新阵营显示
     UI_UPDATE_GROUP,
 
-
     UI_UPDATE_JOYSTICK,
 
     UI_CLOSE_LOADING,
+    UI_UPDATE_LOADING,
 }
