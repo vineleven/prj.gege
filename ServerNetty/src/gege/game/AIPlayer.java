@@ -143,13 +143,24 @@ public class AIPlayer extends Player {
 				GameItem item = getNearestItem(getGroup());
 				
 				// 这里只是借助方法算方向
-//				setDir(item.x - x, item.y - y);
-//				int itemDir1 = m_dir1;
+				setDir(item.x - x, item.y - y);
+				int itemDir1 = m_dir1;
 //				int itemDir2 = m_dir2;
 				
 				setDir(x - m_nearestPlayer.x, y - m_nearestPlayer.y);
-//				if(Math.abs(itemDir1 - m_dir1) != 0){
-//				}
+				
+				float dis = Math.abs(m_nearestPlayer.x - x) + Math.abs(m_nearestPlayer.y - y);
+				// 敌人比较远的时候，考虑去吃道具
+				if(dis > 10){
+					setDir(item.x - x, item.y - y);
+				} else {
+					// 或者正好在路上的时候，优先物品方向
+					if(itemDir1 == m_dir2){
+						int temp = m_dir1;
+						m_dir1 = m_dir2;
+						m_dir2 = temp;
+					}
+				}
 			}
 		}
 		//*/

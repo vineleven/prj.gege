@@ -28,4 +28,6 @@ public enum EventId {
 
     UI_CLOSE_LOADING,
     UI_UPDATE_LOADING,
+
+    UI_ADD_NAME,
 }

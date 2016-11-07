@@ -101,6 +101,12 @@ public class MgrPanel : EventBehaviour
     }
 
 
+    public static void openName()
+    {
+        openPanel(PanelName.getInstance());
+    }
+
+
 
 
 

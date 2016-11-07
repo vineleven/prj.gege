@@ -116,6 +116,7 @@ public class Player extends GameEntity{
 //		info.put("s", m_speed);
 		info.put("g", m_group);
 		info.put("i", m_index);
+		info.put("n", getName());
 		
 		return info;
 	}

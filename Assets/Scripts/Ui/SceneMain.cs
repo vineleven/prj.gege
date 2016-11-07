@@ -22,6 +22,7 @@ public class SceneMain : SceneBase {
         Tools.Log("Game Start");
         MgrPanel.disposeAllPanel(MgrPanel.LAYER_UI);
         MgrPanel.openBattle();
+        MgrPanel.openName();
     }
 
 

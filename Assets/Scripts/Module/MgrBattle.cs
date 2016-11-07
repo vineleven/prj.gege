@@ -99,6 +99,8 @@ public class MgrBattle : EventBehaviour
 
     static void rspStartGame(Hashtable data)
     {
+        EventDispatcher.getGlobalInstance().dispatchEvent(EventId.MSG_GAME_START);
+
         m_playerIndex = Convert.ToInt32(data["idx"]);
         m_group = Convert.ToInt32(data["group"]);
         m_startGameTime = Convert.ToInt64(data["time"]);
@@ -119,6 +121,7 @@ public class MgrBattle : EventBehaviour
         Hashtable pData;
         int group, idx;
         float x, y;
+        string name;
         for (int i = 0; i < players.Count; i++)
         {
             pData = players[i] as Hashtable;
@@ -127,14 +130,15 @@ public class MgrBattle : EventBehaviour
             y = Convert.ToSingle(pData["y"]);
             //speed = Convert.ToSingle(pData["s"]);
             idx = Convert.ToInt32(pData["i"]);
+            name = pData["n"] as string;
 
-            createPlayer(group, idx, x, y, speed);
+            createPlayer(group, idx, x, y, speed, name);
         }
 
 
         setNextState(STATE_LOADING);
         curTime = getCurTime();
-		EventDispatcher.getGlobalInstance().dispatchEvent(EventId.MSG_GAME_START);
+		
         MgrPanel.openLoading();
     }
 
@@ -326,10 +330,10 @@ public class MgrBattle : EventBehaviour
 	}
 
 
-    static void createPlayer(int group, int idx, float x, float y, float speed)
+    static void createPlayer(int group, int idx, float x, float y, float speed, string name)
     {
         Player player = new Player("Player" + (group + 1), group, idx, x, y, speed);
-
+        player.setName(name);
         if (idx == m_playerIndex && group == m_group)
         {
             player.set2Main();

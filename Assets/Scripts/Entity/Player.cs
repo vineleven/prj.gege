@@ -45,6 +45,16 @@ public class Player : GameEntity
     }
 
 
+    public void setName(string name)
+    {
+        var node = transform.FindChild("NameNode");
+        Hashtable data = new Hashtable();
+        data["name"] = name;
+        data["node"] = node;
+        EventDispatcher.getGlobalInstance().dispatchEvent(EventId.UI_ADD_NAME, data);
+    }
+
+
     public void set2Main()
     {
         m_bMainPlayer = true;
