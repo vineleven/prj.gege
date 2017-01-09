@@ -128,6 +128,7 @@ public class PanelName : PanelBase
             Vector3 pos = MgrScene.battleCamera.WorldToScreenPoint(m_target.position);
             Vector2 namePos;
             RectTransformUtility.ScreenPointToLocalPointInRectangle(m_parent, pos, MgrScene.uiCamera, out namePos);
+            namePos.y = namePos.y + 30;
             m_name.localPosition = namePos;
         }
     }

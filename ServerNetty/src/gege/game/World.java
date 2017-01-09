@@ -46,7 +46,7 @@ public class World {
 	private LinkedList<GameItem> m_items = new LinkedList<>();
 	
 	
-	private float m_speed = 4f / 1000;
+	private float m_speed = 2f / 1000;
 	
 	// 游戏结束时间
 	private long m_gameOverTime = 0;
@@ -54,6 +54,8 @@ public class World {
 	
 	// 物品最大数量
 	private int m_itemMaxCount;
+	
+	final private int GAME_TIME = 60000 * 3;
 	
 	
 	protected int m_state = STATE_NORMAL;
@@ -261,7 +263,7 @@ public class World {
 	public void start(){
 		int delay = 3000;
 		notifyStartInfo(delay);
-		createItem(4);
+		createItem(2);
 		Game.getInstance().callLaterTime(delay, this::onStart);
 		m_state = STATE_NORMAL;
 	}
@@ -273,7 +275,7 @@ public class World {
 		});
 		m_bStart = true;
 		// 1分钟游戏时间
-		m_gameOverTime = Game.worldTime + 60000;
+		m_gameOverTime = Game.worldTime + GAME_TIME;
 	}
 	
 	

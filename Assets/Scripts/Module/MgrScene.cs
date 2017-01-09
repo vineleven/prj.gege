@@ -22,7 +22,7 @@ public class MgrScene : EventBehaviour
 		battleCamera = GameObject.Find("BattleCamera").GetComponent<Camera>();
 //		battleCamera.enabled = false;
         float value = battleCamera.fieldOfView;
-        battleCamera.fieldOfView = 50 / DESIGN_RESOLUTION_SCALE;
+        //battleCamera.fieldOfView = 50 / DESIGN_RESOLUTION_SCALE;
 	}
 
 

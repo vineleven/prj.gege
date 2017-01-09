@@ -141,7 +141,7 @@ public class AIPlayer extends Player {
 				// 逃跑
 				// 在不被敌人吃的情况下，会优先往道具跑
 				GameItem item = getNearestItem(getGroup());
-				
+				if(item == null) return;
 				// 这里只是借助方法算方向
 				setDir(item.x - x, item.y - y);
 				int itemDir1 = m_dir1;

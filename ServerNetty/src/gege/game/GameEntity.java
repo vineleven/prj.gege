@@ -21,8 +21,8 @@ public abstract class GameEntity {
 	public void setSize(float w, float h){
 		this.w = w;
 		this.h = h;
-		halfw = w / 2;
-		halfh = h / 2;
+		halfw = w / 3;
+		halfh = h / 3;
 	}
 	
 	

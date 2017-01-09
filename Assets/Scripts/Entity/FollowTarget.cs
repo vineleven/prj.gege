@@ -41,6 +41,8 @@ public class FollowTarget : MonoBehaviour {
 		if (target == null)
             return;
 
+        if (target != null) return;
+
         if (_xRotation != xRotation)
         {
             _xRotation = xRotation;

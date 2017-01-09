@@ -118,6 +118,12 @@ public class MgrBattle : EventBehaviour
         m_map = new Map(mapData);
         m_map.CreateMap();
 
+        int pos = Mathf.FloorToInt(mapData.Count / 2f);
+        int size = Mathf.CeilToInt(mapData.Count / 2f);
+
+        MgrScene.battleCamera.transform.position = new Vector3(pos, pos, -10);
+        MgrScene.battleCamera.orthographicSize = size * 2;
+
         Hashtable pData;
         int group, idx;
         float x, y;
